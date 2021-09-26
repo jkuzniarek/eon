@@ -2,7 +2,7 @@ package ast
 
 import (
 	"eon/token"
-	"bytes"
+	// "bytes"
 )
 
 // ast node
@@ -44,7 +44,7 @@ func (p *Program) TokenLiteral() string {
 
 type AssignmentExpr struct {
 	Token token.Token // token indicating assignment type
-	Name *Identifier // IDENT token indicating name
+	Name *Identifier // NAME token indicating name
 	Value Expression // 
 }
 func (i *AssignmentExpr) expressionNode() {}
@@ -53,7 +53,7 @@ func (i *AssignmentExpr) TokenLiteral() string {
 }
 
 type Identifier struct {
-	Token token.Token // the token.IDENT token
+	Token token.Token // usually the token.NAME token
 	Value string
 }
 func (i *Identifier) expressionNode() {}
