@@ -4,8 +4,6 @@ import (
 	"eon/ast"
 	"eon/lexer"
 	"eon/token"
-	"fmt"
-	// "strconv"
 )
 
 const (
@@ -46,22 +44,6 @@ func New(l *lexer.Lexer, sh bool) *Parser {
 	return p 
 }
 
-func (p *Parser) Errors() []string {
-	return p.errors
-}
-
-func (p *Parser) peekError(t token.TokenType) {
-	msg := fmt.Sprintf("expected next token to be %s, got %s instead", t.ToStr(), p.peekToken.Type.ToStr())
-	p.errors = append(p.errors, msg)
-}
-
-func (p *Parser) nextToken() {
-	p.curToken = p.peekToken
-	if(p.curTokenIs(token.EOF)){
-		return
-	}
-	p.peekToken = p.l.NextToken()
-}
 
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
@@ -110,24 +92,6 @@ func (p *Parser) parseAssignExpression() *ast.AssignmentExpr {
 	
 	// <-- here
 }
-
-func (p *Parser) curTokenIs(t token.TokenType) bool {
-	return p.curToken.Type == t 
-}
-
-func (p *Parser) peekTokenIs(t token.TokenType) bool {
-	return p.peekToken.Type == t 
-}
-
-func (p *Parser) expectPeek(t token.TokenType) bool{
-	if p.peekTokenIs(t){
-		p.nextToken()
-		return true
-	} else {
-		p.peekError(t)
-		return false
-	}
-}
 /*
 // mutate for object
 func (p *Parser) ParseObject(parent &Object) *object.Object {
@@ -165,10 +129,6 @@ func (p *Parser) ParseObject(parent &Object) *object.Object {
 // 	}
 // }
 
-func (p *Parser) noPrefixParseFnError(t token.TokenType) {
-	msg := fmt.Sprintf("no prefix parse function for %s found", t.ToStr())
-	p.errors = append(p.errors, msg)
-}
 /*
 func (p *Parser) parseIndex(o &Object) {
 	for !p.curTokenIs(token.EOF){
