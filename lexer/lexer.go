@@ -1,108 +1,145 @@
 package lexer
 
-import "eon/token"
+import tk "eon/token"
 
-func (l *Lexer) NextToken() token.Token{
-	var tok token.Token
+func (l *Lexer) NextToken() tk.Token{
+	var tok tk.Token
 
 	l.skipWhitespace()
 
 	switch l.ch{
 	case '/':
 		if l.peekChar() == '/' {
-			tok = token.Token{Type: token.COMMENT, Literal: l.readCommentLine()}
+			tok = tk.Token{Cat: tk.COMMENT, Type: tk.COMMENT, Literal: l.readCommentLine()}
 		} else if l.peekChar() == '*' {
-			tok = token.Token{Type: token.COMMENT, Literal: l.readCommentMultiline()}
+			tok = tk.Token{Cat: tk.COMMENT, Type: tk.COMMENT, Literal: l.readCommentMultiline()}
 		} else {
-			tok = newToken(token.SLASH, l.ch)
+			tok = newToken(tk.ACCESS_OPERATOR, tk.SLASH, l.ch)
 		}
 	case '\n':
-		tok = newToken(token.EOL, l.ch)
+		tok = newToken(tk.EOL, tk.EOL, l.ch)
 	case ':':
 		if l.peekChar() == ':' {
-			tok = newTokenFromSrc(token.SET_CONST, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_CONST, l.input, l.position, l.position+2)
 			l.readChar()
 		} else if l.peekChar() == '?' {
-			tok = newTokenFromSrc(token.SET_WEAK, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_WEAK, l.input, l.position, l.position+2)
 			l.readChar()
 		} else if l.peekChar() == '&' {
-			tok = newTokenFromSrc(token.SET_BIND, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_BIND, l.input, l.position, l.position+2)
 			l.readChar()
 		}  else if l.peekChar() == '+' {
-			tok = newTokenFromSrc(token.SET_PLUS, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_PLUS, l.input, l.position, l.position+2)
 			l.readChar()
 		}  else if l.peekChar() == '-' {
-			tok = newTokenFromSrc(token.SET_MINUS, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_MINUS, l.input, l.position, l.position+2)
 			l.readChar()
 		}  else if l.peekChar() == '#' {
-			tok = newTokenFromSrc(token.SET_TYPE, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_TYPE, l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
-			tok = newToken(token.SET_VAL, l.ch)
+			tok = newToken(tk.ASSIGN_OPERATOR, tk.SET_VAL, l.ch)
 		}
 	case '.':
-		tok = newToken(token.DOT, l.ch)
+		tok = newToken(tk.ACCESS_OPERATOR, tk.DOT, l.ch)
 	case '|':
-		tok = newToken(token.PIPE, l.ch) 
+		tok = newToken(tk.EVAL_OPERATOR, tk.PIPE, l.ch) 
 	case '<':
 		if l.peekChar() == '=' {
-			tok = newTokenFromSrc(token.LT_EQ, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.EVAL_OPERATOR, tk.LT_EQ, l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
-			tok = newToken(token.LT, l.ch)
+			tok = newToken(tk.EVAL_OPERATOR, tk.LT, l.ch)
 		}
 	case '>':
 		if l.peekChar() == '=' {
-			tok = newTokenFromSrc(token.GT_EQ, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.EVAL_OPERATOR, tk.GT_EQ, l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
-			tok = newToken(token.GT, l.ch)
+			tok = newToken(tk.EVAL_OPERATOR, tk.GT, l.ch)
 		}
 	case '(':
 		if l.peekChar() == ':' {
-			tok = newTokenFromSrc(token.CPAREN , l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPEN_DELIMITER, tk.CPAREN , l.input, l.position, l.position+2)
+			l.readChar()
+		} else if l.peekChar() == '-' {
+			tok = newTokenFromSrc(tk.OPEN_DELIMITER, tk.HPAREN , l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
-			tok = newToken(token.LPAREN, l.ch)
+			tok = newToken(tk.OPEN_DELIMITER, tk.LPAREN, l.ch)
 		}
 	case ')':
-		tok = newToken(token.RPAREN, l.ch)
+		tok = newToken(tk.CLOSE_DELIMITER, tk.RPAREN, l.ch)
 	case '{':
 		if l.peekChar() == ':' {
-			tok = newTokenFromSrc(token.SCURLY, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPEN_DELIMITER, tk.SCURLY, l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
-			tok = newToken(token.LCURLY, l.ch)
+			tok = newToken(tk.OPEN_DELIMITER, tk.LCURLY, l.ch)
 		}
 	case '}':
-		tok = newToken(token.RCURLY, l.ch)
+		tok = newToken(tk.CLOSE_DELIMITER, tk.RCURLY, l.ch)
 	case '[':
-		tok = newToken(token.LSQUAR, l.ch)
+		tok = newToken(tk.OPEN_DELIMITER, tk.LSQUAR, l.ch)
 	case ']':
-		tok = newToken(token.RSQUAR, l.ch)
+		tok = newToken(tk.CLOSE_DELIMITER, tk.RSQUAR, l.ch)
+	case '+':
+		if isDigit(l.peekChar()){
+			tok.Type = tk.SINT
+			tok.Cat = tk.PRIMITIVE
+			l.readChar()
+			tok.Literal = "+" + l.readNumber()
+		}
+	case '-':
+		if isDigit(l.peekChar()){
+			tok.Type = tk.SINT
+			tok.Cat = tk.PRIMITIVE
+			l.readChar()
+			tok.Literal = "-" + l.readNumber()
+		}
+	case '$':
+		tok = newToken(tk.KEYWORD, tk.DOLLAR, l.ch)
 	case 0:
 		tok.Literal = ""
-		tok.Type = token.EOF
+		tok.Type = tk.EOF
+		tok.Cat = tk.EOF
 	default:
 		if isLetter(l.ch){
 			if l.peekLChar() == '<' {
 				tok.Literal = l.readIdentifier()
-				tok.Type = token.TYPE
+				tok.Type = tk.TYPE
+				tok.Cat = tk.TYPE
 			} else {
 				tok.Literal = l.readIdentifier()
-				tok.Type = token.LookupName(tok.Literal)
+				tok.Type = tk.LookupName(tok.Literal)
+				if tk.IsKeyword(tok.Literal){
+					tok.Cat = tk.KEYWORD
+				}else{
+					tok.Cat = tk.NAME
+				}
 			}
 		} else if isDigit(l.ch){
-			tok.Type = token.INT
+			tok.Type = tk.UINT
 			tok.Literal = l.readNumber()
+			tok.Cat = tk.PRIMITIVE
 		} else if isOpChar(l.ch){
 			tok.Literal = l.readOperator()
-			tok.Type = token.LookupOp(tok.Literal)
+			tok.Type = tk.LookupOp(tok.Literal)
+			if tk.IsAccessOp(tok.Literal){
+				tok.Cat = tk.ACCESS_OPERATOR
+			} else if tk.IsAssignOp(tok.Literal){
+				tok.Cat = tk.ASSIGN_OPERATOR
+			} else if tk.IsEvalOp(tok.Literal){
+				tok.Cat = tk.EVAL_OPERATOR
+			}else{
+				tok.Cat = tk.ILLEGAL
+			}
 		} else if isQuote(l.ch){
-			tok.Type = token.STR 
+			tok.Type = tk.STR 
 			tok.Literal = l.readString(l.ch)
+			tok.Cat = tk.PRIMITIVE
 		} else {
-			tok = newToken(token.ILLEGAL, l.ch)
+			tok = newToken(tk.ILLEGAL, tk.ILLEGAL, l.ch)
 		}
 	}
 	l.readChar()

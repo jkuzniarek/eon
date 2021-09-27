@@ -1,6 +1,6 @@
 package lexer
 
-import "eon/token"
+import tk "eon/token"
 
 
 func isDigit(ch byte) bool {
@@ -11,12 +11,12 @@ func isQuote(ch byte) bool {
 	return ch == '`' || ch == '"' || ch == '\''
 }
 
-func newToken(tokenType token.TokenType, ch byte) token.Token{
-	return token.Token{Type: tokenType, Literal: string(ch)}
+func newToken(cat tk.TokenType, typ tk.TokenType, ch byte) tk.Token{
+	return tk.Token{Cat: cat, Type: typ, Literal: string(ch)}
 }
 
-func newTokenFromSrc(tokenType token.TokenType, src string, start int, upto int) token.Token{
-	return token.Token{Type: tokenType, Literal: src[start:upto] }
+func newTokenFromSrc(cat tk.TokenType, typ tk.TokenType, src string, start int, upto int) tk.Token{
+	return tk.Token{Cat: cat, Type: typ, Literal: src[start:upto] }
 }
 
 func isLetter(ch byte) bool {
@@ -24,47 +24,13 @@ func isLetter(ch byte) bool {
 }
 
 func isIdentChar(ch byte) bool {
-	return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || (ch == '_') || ('0' <= ch && ch <= '9')
+	return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || (ch == '_') || ('0' <= ch && ch <= '9') || ch == '$'
 }
 
 // checks if the input character is an op character NOT if a string is an operator
 func isOpChar(ch byte) bool {
 	switch ch {
-	case '.':
-		return true
-	case '/':
-		return true
-	case '#':
-		return true
-	case '*':
-		return true
-	case '@':
-		return true
-	case '|':
-		return true
-	case '!':
-		return true
-	case '$':
-		return true
-	case '%':
-		return true
-	case '^':
-		return true
-	case '=':
-		return true
-	case ':':
-		return true
-	case '?':
-		return true
-	case '&':
-		return true
-	case '+':
-		return true
-	case '-':
-		return true
-	case '<':
-		return true
-	case '>':
+	case '.', '/', '#', '*', '@', '|', '!', '%', '=', ':', '?', '&', '+', '-', '<', '>':
 		return true
 	default:
 		return false
