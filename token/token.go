@@ -1,8 +1,10 @@
 package token
 
 type TokenType int
+type CatType int
 
 type Token struct{
+	Cat CatType
 	Type TokenType
 	Literal string
 }
@@ -16,11 +18,19 @@ const (
 	// Identifiers & Literals
 	TYPE
 	NAME // add, foobar, x, y, ...
-	INT // 12345
+	KEYWORD
+	OPEN_DELIMITER
+	CLOSE_DELIMITER
+	ACCESS_OPERATOR
+	ASSIGN_OPERATOR
+	EVAL_OPERATOR
+	UINT // 12345
+	SINT // +1, -2, +0
 	STR 
 	COMMENT 
 	
 	// Delimiters
+	HPAREN
 	CPAREN 
 	LPAREN 
 	RPAREN 
@@ -31,18 +41,14 @@ const (
 	RSQUAR
 
 
-	// Operators
+	// Access Operators
 	DOT 
 	SLASH 
 	OCTO 
 	STAR
 	AT 
-	PIPE 
-	BANG 
-	DOLLAR 
-	PERCENT 
-	CARET
-	EQ
+
+	// Assign Operators
 	SET_VAL 
 	SET_CONST  // constant value
 	SET_WEAK  // weak reference (still uses ARC)
@@ -50,6 +56,8 @@ const (
 	SET_PLUS 
 	SET_MINUS 
 	SET_TYPE 
+
+	// Eval Operators
 	TYPE_EQ 
 	EQEQ 
 	NOT_EQ 
@@ -57,6 +65,7 @@ const (
 	GT 
 	LT_EQ 
 	GT_EQ 
+	PIPE 
 
 	// Keywords
 	FN 
@@ -79,6 +88,13 @@ const (
 	HAS 
 	OS 
 	VOL
+	DOLLAR 
+	SUM 
+	DIF 
+	MUL 
+	DIV 
+	EXP 
+	MOD 
 )
 
 var operators = map[string]TokenType {
@@ -88,11 +104,7 @@ var operators = map[string]TokenType {
 	"*": STAR,
 	"@": AT,
 	"|": PIPE,
-	"!": BANG,
 	"$": DOLLAR,
-	"%": PERCENT,
-	"^": CARET,
-	"=": EQ,
 	":": SET_VAL,
 	"::": SET_CONST,
 	":?": SET_WEAK,
@@ -130,71 +142,11 @@ var keywords = map[string]TokenType {
 	"has": HAS,
 	"os": OS,
 	"vol": VOL,
-}
-
-func LookupName(ident string) TokenType {
-	if tok, ok := keywords[ident]; ok {
-		return tok 
-	}
-	return NAME 
-}
-
-// checks if the input string is an operator
-func LookupOp(op string) TokenType {
-	if tok, ok := operators[op]; ok {
-		return tok 
-	}
-	return ILLEGAL 
-}
-
-func (t TokenType) ToStr() string {
-	switch t {
-	case ILLEGAL:
-		return "ILLEGAL"
-	case EOF:
-		return "EOF"
-	case EOL: 
-		return "EOL"
-	
-	// Identifiers & Literals
-	case TYPE:
-		return "TYPE"
-	case NAME: 
-		return "NAME"
-	case INT:
-		return "INT"
-	case STR:
-		return "STR"
-	case COMMENT:
-		return "COMMENT"
-	
-	// Delimiters
-	case CPAREN:
-		return "CPAREN"
-	case LPAREN:
-		return "LPAREN"
-	case RPAREN:
-		return "RPAREN"
-	case SCURLY:
-		return "SCURLY"
-	case LCURLY:
-		return "LCURLY"
-	case RCURLY:
-		return "RCURLY"
-	case LSQUAR:
-		return "LSQUAR"
-	case RSQUAR:
-		return "RSQUAR"
-	}
-	for k, v := range keywords {
-		if t == v {
-			return k
-		}
-	}
-	for k, v := range operators {
-		if t == v {
-			return k
-		}
-	}
-	return "Undefined Token"
+	"$": DOLLAR,
+	"sum": SUM,
+	"dif": DIF,
+	"mul": MUL,
+	"div": DIV,
+	"exp": EXP,
+	"mod": MOD,
 }
