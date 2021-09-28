@@ -20,22 +20,22 @@ func (l *Lexer) NextToken() tk.Token{
 		tok = newToken(tk.EOL, tk.EOL, l.ch)
 	case ':':
 		if l.peekChar() == ':' {
-			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_CONST, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_CONST, &l.input, l.position, l.position+2)
 			l.readChar()
 		} else if l.peekChar() == '?' {
-			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_WEAK, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_WEAK, &l.input, l.position, l.position+2)
 			l.readChar()
 		} else if l.peekChar() == '&' {
-			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_BIND, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_BIND, &l.input, l.position, l.position+2)
 			l.readChar()
 		}  else if l.peekChar() == '+' {
-			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_PLUS, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_PLUS, &l.input, l.position, l.position+2)
 			l.readChar()
 		}  else if l.peekChar() == '-' {
-			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_MINUS, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_MINUS, &l.input, l.position, l.position+2)
 			l.readChar()
 		}  else if l.peekChar() == '#' {
-			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_TYPE, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_TYPE, &l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
 			tok = newToken(tk.ASSIGN_OPERATOR, tk.SET_VAL, l.ch)
@@ -46,24 +46,24 @@ func (l *Lexer) NextToken() tk.Token{
 		tok = newToken(tk.EVAL_OPERATOR, tk.PIPE, l.ch) 
 	case '<':
 		if l.peekChar() == '=' {
-			tok = newTokenFromSrc(tk.EVAL_OPERATOR, tk.LT_EQ, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.EVAL_OPERATOR, tk.LT_EQ, &l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
 			tok = newToken(tk.EVAL_OPERATOR, tk.LT, l.ch)
 		}
 	case '>':
 		if l.peekChar() == '=' {
-			tok = newTokenFromSrc(tk.EVAL_OPERATOR, tk.GT_EQ, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.EVAL_OPERATOR, tk.GT_EQ, &l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
 			tok = newToken(tk.EVAL_OPERATOR, tk.GT, l.ch)
 		}
 	case '(':
 		if l.peekChar() == ':' {
-			tok = newTokenFromSrc(tk.OPEN_DELIMITER, tk.CPAREN , l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPEN_DELIMITER, tk.CPAREN , &l.input, l.position, l.position+2)
 			l.readChar()
 		} else if l.peekChar() == '-' {
-			tok = newTokenFromSrc(tk.OPEN_DELIMITER, tk.HPAREN , l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPEN_DELIMITER, tk.HPAREN , &l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
 			tok = newToken(tk.OPEN_DELIMITER, tk.LPAREN, l.ch)
@@ -72,7 +72,7 @@ func (l *Lexer) NextToken() tk.Token{
 		tok = newToken(tk.CLOSE_DELIMITER, tk.RPAREN, l.ch)
 	case '{':
 		if l.peekChar() == ':' {
-			tok = newTokenFromSrc(tk.OPEN_DELIMITER, tk.SCURLY, l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPEN_DELIMITER, tk.SCURLY, &l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
 			tok = newToken(tk.OPEN_DELIMITER, tk.LCURLY, l.ch)
@@ -85,20 +85,18 @@ func (l *Lexer) NextToken() tk.Token{
 		tok = newToken(tk.CLOSE_DELIMITER, tk.RSQUAR, l.ch)
 	case '+':
 		if isDigit(l.peekChar()){
-			tok.Type = tk.SINT
-			tok.Cat = tk.PRIMITIVE
-			l.readChar()
-			tok.Literal = "+" + l.readNumber()
+			tok = l.newSNumber()
 		}
 	case '-':
 		if isDigit(l.peekChar()){
-			tok.Type = tk.SINT
-			tok.Cat = tk.PRIMITIVE
-			l.readChar()
-			tok.Literal = "-" + l.readNumber()
+			tok = l.newSNumber()
 		}
 	case '$':
 		tok = newToken(tk.KEYWORD, tk.DOLLAR, l.ch)
+	case '\':
+		if l.peekChar() == 'x' || l.peekChar() == 'd' || l.peekChar() == 'b' {
+			tok = tk.Token{Cat: tk.PRIMITIVE, Type: tk.BYTES, Literal: l.readCommentLine()}
+		}
 	case 0:
 		tok.Literal = ""
 		tok.Type = tk.EOF
@@ -119,9 +117,7 @@ func (l *Lexer) NextToken() tk.Token{
 				}
 			}
 		} else if isDigit(l.ch){
-			tok.Type = tk.UINT
-			tok.Literal = l.readNumber()
-			tok.Cat = tk.PRIMITIVE
+			tok = l.newUNumber()
 		} else if isOpChar(l.ch){
 			tok.Literal = l.readOperator()
 			tok.Type = tk.LookupOp(tok.Literal)
@@ -136,7 +132,7 @@ func (l *Lexer) NextToken() tk.Token{
 			}
 		} else if isQuote(l.ch){
 			tok.Type = tk.STR 
-			tok.Literal = l.readString(l.ch)
+			tok.Literal = l.readString()
 			tok.Cat = tk.PRIMITIVE
 		} else {
 			tok = newToken(tk.ILLEGAL, tk.ILLEGAL, l.ch)
@@ -207,12 +203,38 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
-func (l *Lexer) readNumber() string{
+func (l *Lexer) newUNumber() tk.token{
 	position := l.position
 	for isDigit(l.peekChar()){
 		l.readChar()
 	}
-	return l.input[position:l.position+1]
+
+	if l.peekChar() == '.'{
+		l.readChar()
+		for isDigit(l.peekChar()){
+			l.readChar()
+		}
+		return newTokenFromSrc(tk.PRIMITIVE, tk.UDEC, &l.input, position, l.position+1)
+	}else{
+		return newTokenFromSrc(tk.PRIMITIVE, tk.UINT, &l.input, position, l.position+1)
+	}
+}
+
+func (l *Lexer) newSNumber() tk.token{
+	position := l.position
+	for isDigit(l.peekChar()){
+		l.readChar()
+	}
+
+	if l.peekChar() == '.'{
+		l.readChar()
+		for isDigit(l.peekChar()){
+			l.readChar()
+		}
+		return newTokenFromSrc(tk.PRIMITIVE, tk.SDEC, &l.input, position, l.position+1)
+	}else{
+		return newTokenFromSrc(tk.PRIMITIVE, tk.SINT, &l.input, position, l.position+1)
+	}
 }
 
 func (l *Lexer) readCommentLine() string{
@@ -236,10 +258,26 @@ func (l *Lexer) readCommentMultiline() string{
 	return l.input[position:l.position-1]
 }
 
-func (l *Lexer) readString(ch byte) string{
+func (l *Lexer) readString() string{
+	ch := l.ch
+	position := l.position
+	another := true
+	for another {
+		for l.ch != ch {
+			l.readChar()
+		}
+		if l.peekChar() != ch {
+			another = false
+		}
+	}
+	
+	return l.input[position:l.position+1]
+}
+
+func (l *Lexer) readBytes() string{
 	position := l.position
 	l.readChar()
-	for l.ch != ch {
+	for l.ch != '\' {
 		l.readChar()
 	}
 	return l.input[position:l.position+1]
