@@ -2,19 +2,20 @@ package ast
 
 import (
 	"eon/token"
-	// "bytes"
+	"bytes"
 )
 
 // ast node
 type Node interface {
 	TokenLiteral() string
+	String() string
 }
 
-
-// type Statement interface {
-// 	Node
-// 	statementNode()
-// }
+// remove?
+type Command interface {
+	Node
+	commandNode()
+}
 
 type Expression interface {
 	Node 
@@ -23,33 +24,45 @@ type Expression interface {
 
 // eventually rename to Root
 type Program struct {
-	Statements []Expression 
+	Commands []Expression 
 }
 func (p *Program) TokenLiteral() string {
-	if len(p.Statements) > 0 {
-		return p.Statements[0].TokenLiteral()
+	if len(p.Commands) > 0 {
+		return p.Commands[0].TokenLiteral()
 	} else {
 		return ""
 	}
 }
-// func (p *Program) String() string{
-// 	var out bytes.Buffer
+func (p *Program) String() string{
+	var out bytes.Buffer
 
-// 	for _, s := range p.Statements{
-// 		out.WriteString(s.String())
-// 	}
+	for _, s := range p.Commands{
+		out.WriteString(s.String())
+	}
 
-// 	return out.String()
-// }
+	return out.String()
+}
 
 type AssignmentExpr struct {
 	Token token.Token // token indicating assignment type
 	Name *Identifier // NAME token indicating name
 	Value Expression // 
 }
-func (i *AssignmentExpr) expressionNode() {}
-func (i *AssignmentExpr) TokenLiteral() string {
-	return i.Token.Literal 
+func (ae *AssignmentExpr) expressionNode() {}
+func (ae *AssignmentExpr) TokenLiteral() string {
+	return ae.Token.Literal 
+}
+func (ae *AssignmentExpr) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(ae.Name.String())
+	out.WriteString(ae.TokenLiteral() + " ")
+
+	if ae.Value != nil {
+		out.WriteString(ae.Value.String())
+	}
+
+	return out.String()
 }
 
 type Identifier struct {
@@ -60,59 +73,37 @@ func (i *Identifier) expressionNode() {}
 func (i *Identifier) TokenLiteral() string {
 	return i.Token.Literal 
 }
-// func (i *Identifier) String() string{
-// 	return i.Value
-// }
-
-type ExpressionStatement struct{
-	Token token.Token // the first token of the expression
-	Expression Expression
+func (i *Identifier) String() string{
+	return i.Value
 }
-func (es *ExpressionStatement) statementNode() {}
-func (es *ExpressionStatement) TokenLiteral() string {
-	return es.Token.Literal
-}
-// func (es *ExpressionStatement) String() string{
-// 	if es.Expression != nil {
-// 		return es.Expression.String()
-// 	}
-// 	return ""
-// }
 
-type IntegerLiteral struct{
+// unsigned int
+type UIntegerLiteral struct{
 	Token token.Token 
-	Value int64
+	Value uint
 }
 
-func (il *IntegerLiteral) expressionNode() {}
-func (il *IntegerLiteral) TokenLiteral() string {
+func (il *UIntegerLiteral) expressionNode() {}
+func (il *UIntegerLiteral) TokenLiteral() string {
 	return il.Token.Literal
 }
-// func (il *IntegerLiteral) String() string{
-// 	return il.Token.Literal
-// }
-
-
-type PrefixExpression struct {
-	Token token.Token // the prefix token, eg !
-	Operator string
-	Right Expression 
+func (il *UIntegerLiteral) String() string{
+	return il.Token.Literal
 }
 
-func (pe *PrefixExpression) expressionNode(){}
-func (pe *PrefixExpression) TokenLiteral() string {
-	return pe.Token.Literal
+// signed int
+type SIntegerLiteral struct{
+	Token token.Token 
+	Value int
 }
-// func (pe *PrefixExpression) String() string {
-// 	var out bytes.Buffer
 
-// 	out.WriteString("(")
-// 	out.WriteString(pe.Operator)
-// 	out.WriteString(pe.Right.String())
-// 	out.WriteString(")")
-
-// 	return out.String()
-// }
+func (il *SIntegerLiteral) expressionNode() {}
+func (il *SIntegerLiteral) TokenLiteral() string {
+	return il.Token.Literal
+}
+func (il *SIntegerLiteral) String() string{
+	return il.Token.Literal
+}
 
 type InfixExpression struct {
 	Token token.Token // the operator token, eg +
@@ -141,8 +132,8 @@ func (ie *InfixExpression) TokenLiteral() string {
 // type IfExpression struct {
 // 	Token token.Token // The 'if' token
 // 	Condition Expression
-// 	Consequence *BlockStatement
-// 	Alternative *BlockStatement
+// 	Consequence *BlockCommand
+// 	Alternative *BlockCommand
 // }
 
 // func (ie *IfExpression) expressionNode(){}
@@ -166,19 +157,19 @@ func (ie *InfixExpression) TokenLiteral() string {
 // }
 
 // consult for linked_list, array
-// type BlockStatement struct{
+// type BlockCommand struct{
 // 	Token token.Token // the { token
-// 	Statements []Statement 
+// 	Commands []Command 
 // }
 
-// func (bs *BlockStatement) statementNode(){}
-// func (bs *BlockStatement) TokenLiteral() string {
+// func (bs *BlockCommand) commandNode(){}
+// func (bs *BlockCommand) TokenLiteral() string {
 // 	return bs.Token.Literal
 // }
-// func (bs *BlockStatement) String() string {
+// func (bs *BlockCommand) String() string {
 // 	var out bytes.Buffer
 
-// 	for _, s := range bs.Statements {
+// 	for _, s := range bs.Commands {
 // 		out.WriteString(s.String())
 // 	}
 
