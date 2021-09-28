@@ -27,6 +27,9 @@ const (
 	PRIMITIVE
 	UINT // 12345
 	SINT // +1, -2, +0
+	UDEC // 1.2
+	SDEC // +1.0, -2.00, +0.000
+	BYTES // \x 1D 2A FF\, \d 255 23 0\, \b 00110111 11101000 00000000\
 	STR 
 	COMMENT 
 	

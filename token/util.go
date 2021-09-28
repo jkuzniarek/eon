@@ -86,6 +86,12 @@ func (t TokenType) ToStr() string {
 		return "UINT"
 	case SINT:
 		return "SINT"
+	case UDEC:
+		return "UDEC"
+	case SDEC:
+		return "SDEC"
+	case BYTES:
+		return "BYTES"
 	case STR:
 		return "STR"
 	case COMMENT:
