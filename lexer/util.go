@@ -15,7 +15,7 @@ func newToken(cat tk.TokenType, typ tk.TokenType, ch byte) tk.Token{
 	return tk.Token{Cat: cat, Type: typ, Literal: string(ch)}
 }
 
-func newTokenFromSrc(cat tk.TokenType, typ tk.TokenType, src string, start int, upto int) tk.Token{
+func newTokenFromSrc(cat tk.TokenType, typ tk.TokenType, src *string, start int, upto int) tk.Token{
 	return tk.Token{Cat: cat, Type: typ, Literal: src[start:upto] }
 }
 
