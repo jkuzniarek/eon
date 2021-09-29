@@ -45,3 +45,21 @@ func (p *Parser) parsingErrAt(location string) {
 	msg := fmt.Sprintf("could not parse %q in %s", p.curToken.Literal, location)
 	p.errors = append(p.errors, msg)
 }
+
+func (p *Parser) registerInfix(tokenType tk.TokenType, fn infixParseFn) {
+	p.infixParseFns[tokenType] = fn
+}
+
+func (p *Parser) peekPrecedence() int {
+	if p, ok := precedences[p.peekToken.Type]; ok {
+		return p 
+	}
+	return LOWEST
+}
+
+func (p *Parser) curPrecedence() int {
+	if p, ok := precedences[p.curToken.Type]; ok {
+		return p 
+	}
+	return LOWEST
+}
