@@ -86,36 +86,58 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	// return leftExp
 }
 
-func (p *Parser) parseAccessor() *ast.Accessor {
-
+func (p *Parser) parseAccessor() ast.Expression {
+// TODO
 }
 
-func (p *Parser) parseCard() *ast.Group {
-
+func (p *Parser) parseCard() ast.Expression {
+// TODO
 }
 
-func (p *Parser) parseSInt() *ast.Group {
+func (p *Parser) parseSInt() ast.Expression {
+	lit := &ast.SIntegerLiteral{Token: p.curToken}
 
+	value, err := strconv.ParseInt(p.curToken.Literal, 0, 0)
+	if err != nil {
+		msg := fmt.Sprintf("could not parse %q as signed integer", p.curToken.Literal)
+		p.errors = append(p.errors, msg)
+		return nil
+	}
+
+	lit.Value = int(value)
+
+	return lit
 }
 
-func (p *Parser) parseUInt() *ast.Group {
+func (p *Parser) parseUInt() ast.Expression {
+	lit := &ast.UIntegerLiteral{Token: p.curToken}
 
+	value, err := strconv.ParseUint(p.curToken.Literal, 0, 0)
+	if err != nil {
+		msg := fmt.Sprintf("could not parse %q as unsigned integer", p.curToken.Literal)
+		p.errors = append(p.errors, msg)
+		return nil
+	}
+
+	lit.Value = uint(value)
+
+	return lit
 }
 
-func (p *Parser) parseSDec() *ast.Group {
-
+func (p *Parser) parseSDec() ast.Expression {
+// TODO
 }
 
-func (p *Parser) parseUDec() *ast.Group {
-
+func (p *Parser) parseUDec() ast.Expression {
+// TODO
 }
 
-func (p *Parser) parseStr() *ast.Group {
-
+func (p *Parser) parseStr() ast.Expression {
+// TODO
 }
 
-func (p *Parser) parseBytes() *ast.Group {
-
+func (p *Parser) parseBytes() ast.Expression {
+// TODO
 }
 
 
@@ -149,38 +171,8 @@ func (p *Parser) parseIdentifier() ast.Expression {
 	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
-func (p *Parser) parseUIntegerLiteral() ast.Expression {
-	lit := &ast.UIntegerLiteral{Token: p.curToken}
-
-	value, err := strconv.ParseUint(p.curToken.Literal, 0, 0)
-	if err != nil {
-		msg := fmt.Sprintf("could not parse %q as unsigned integer", p.curToken.Literal)
-		p.errors = append(p.errors, msg)
-		return nil
-	}
-
-	lit.Value = uint(value)
-
-	return lit
-}
-
-func (p *Parser) parseSIntegerLiteral() ast.Expression {
-	lit := &ast.SIntegerLiteral{Token: p.curToken}
-
-	value, err := strconv.ParseInt(p.curToken.Literal, 0, 0)
-	if err != nil {
-		msg := fmt.Sprintf("could not parse %q as signed integer", p.curToken.Literal)
-		p.errors = append(p.errors, msg)
-		return nil
-	}
-
-	lit.Value = int(value)
-
-	return lit
-}
-
 func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
-	expression := &ast.InfixExpression{
+	expression := &ast.Infix{
 		Token: p.curToken,
 		Operator: p.curToken.Literal,
 		Left: left,

@@ -78,55 +78,55 @@ func (i *Identifier) String() string{
 }
 
 // unsigned int
-type UIntegerLiteral struct{
+type UInt struct{
 	Token token.Token 
 	Value uint
 }
 
-func (il *UIntegerLiteral) expressionNode() {}
-func (il *UIntegerLiteral) TokenLiteral() string {
+func (il *UInt) expressionNode() {}
+func (il *UInt) TokenLiteral() string {
 	return il.Token.Literal
 }
-func (il *UIntegerLiteral) String() string{
+func (il *UInt) String() string{
 	return il.Token.Literal
 }
 
 // signed int
-type SIntegerLiteral struct{
+type SInt struct{
 	Token token.Token 
 	Value int
 }
 
-func (il *SIntegerLiteral) expressionNode() {}
-func (il *SIntegerLiteral) TokenLiteral() string {
+func (il *SInt) expressionNode() {}
+func (il *SInt) TokenLiteral() string {
 	return il.Token.Literal
 }
-func (il *SIntegerLiteral) String() string{
+func (il *SInt) String() string{
 	return il.Token.Literal
 }
 
-type InfixExpression struct {
+type Infix struct {
 	Token token.Token // the operator token, eg +
 	Left Expression
 	Operator string
 	Right Expression
 }
 
-func (ie *InfixExpression) expressionNode(){}
-func (ie *InfixExpression) TokenLiteral() string {
+func (ie *Infix) expressionNode(){}
+func (ie *Infix) TokenLiteral() string {
 	return ie.Token.Literal
 }
-// func (ie *InfixExpression) String() string {
-// 	var out bytes.Buffer
+func (ie *Infix) String() string {
+	var out bytes.Buffer
 
-// 	out.WriteString("(")
-// 	out.WriteString(ie.Left.String())
-// 	out.WriteString(" " + ie.Operator + " ")
-// 	out.WriteString(ie.Right.String())
-// 	out.WriteString(")")
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString(" " + ie.Operator + " ")
+	out.WriteString(ie.Right.String())
+	out.WriteString(")")
 
-// 	return out.String()
-// }
+	return out.String()
+}
 
 // consult for others
 // type IfExpression struct {
