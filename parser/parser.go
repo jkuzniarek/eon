@@ -11,12 +11,14 @@ import (
 const (
 	_ int = iota
 	LOWEST
+	PIPESRC // 4 | function
 	EQUALS // == or !=
 	LESSGREATER // < or >
 	CALL // myFunction x
 )
 
 var precedences = map[tk.TokenType]int{
+	tk.PIPE: PIPESRC,
 	tk.TYPE_EQ: EQUALS, 
 	tk.EQEQ: EQUALS,
 	tk.NOT_EQ: EQUALS,
@@ -24,12 +26,8 @@ var precedences = map[tk.TokenType]int{
 	tk.GT: LESSGREATER,
 	tk.LT_EQ: LESSGREATER,
 	tk.GT_EQ: LESSGREATER,
-	tk.PIPE: LOWEST,
 }
 
-type (
-	infixParseFn func(ast.Expression) ast.Expression
-)
 
 type Parser struct {
 	l *lexer.Lexer 

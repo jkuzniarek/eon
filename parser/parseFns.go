@@ -25,14 +25,15 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {
+
 	switch p.curToken.Cat {
 	case tk.NAME, tk.KEYWORD:
-		return p.parseAccessor()
+		leftExp := p.parseAccessor()
 	case tk.OPEN_DELIMITER:
-		return p.parseGroup()
+		leftExp := p.parseGroup()
 	case tk.EVAL_OPERATOR:
 		if p.curToken.Type == tk.LT {
-			return p.parseCard()
+			leftExp := p.parseCard()
 		} else {
 			p.parsingErrAt("parseExpression()")
 			return nil
@@ -40,17 +41,17 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	case tk.PRIMITIVE:
 		switch p.curToken.Type {
 			case SINT: 
-				return parseSInt()
+				leftExp := parseSInt()
 			case UINT:
-				return parseUInt()
+				leftExp := parseUInt()
 			case SDEC:
-				return parseSDec()
+				leftExp := parseSDec()
 			case UDEC:
-				return parseUDec()
+				leftExp := parseUDec()
 			case STR:
-				return parseStr()
+				leftExp := parseStr()
 			case BYTES:
-				return parseBytes()
+				leftExp := parseBytes()
 			default:
 				p.parsingErrAt("parseExpression()")
 				return nil
@@ -60,19 +61,29 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		return nil
 	}
 
-
-	switch p.curToken.Type {
-	case tk.NAME, tk.INIT, tk.DEST, tk.OUT:
-		switch p.peekToken.Type {
-		case tk.SET_VAL, tk.SET_CONST, tk.SET_WEAK, tk.SET_BIND, tk.SET_PLUS, tk.SET_MINUS, tk.SET_TYPE:
-			return p.parseAssignExpression()
-		case tk.DOT, tk.SLASH, tk.OCTO, tk.STAR, tk.AT, tk.PIPE, tk.BANG, tk.DOLLAR, tk.PERCENT, tk.CARET,
-		tk.TYPE_EQ, tk.EQEQ, tk.NOT_EQ, tk.LT, tk.GT, tk.LT_EQ, tk.GT_EQ:
-			return p.parseInfixExpression()
+	// infix handling
+	for !p.peekTokenIs(tk.EOL) && precedence < p.peekPrecedence() {
+		if p, ok := precedences[p.peekToken.Type]; !ok {
+			return leftExp
 		}
+
+		p.nextToken()
+		leftExp = p.parseInfix(leftExp)
 	}
-	
 	return leftExp
+
+	// // original
+	// switch p.curToken.Type {
+	// case tk.NAME, tk.INIT, tk.DEST, tk.OUT:
+	// 	switch p.peekToken.Type {
+	// 	case tk.SET_VAL, tk.SET_CONST, tk.SET_WEAK, tk.SET_BIND, tk.SET_PLUS, tk.SET_MINUS, tk.SET_TYPE:
+	// 		return p.parseAssignExpression()
+	// 	case tk.DOT, tk.SLASH, tk.OCTO, tk.STAR, tk.AT, tk.PIPE, tk.BANG, tk.DOLLAR, tk.PERCENT, tk.CARET,
+	// 	tk.TYPE_EQ, tk.EQEQ, tk.NOT_EQ, tk.LT, tk.GT, tk.LT_EQ, tk.GT_EQ:
+	// 		return p.parseInfixExpression()
+	// 	}
+	// }
+	// return leftExp
 }
 
 func (p *Parser) parseAccessor() *ast.Accessor {
@@ -168,3 +179,15 @@ func (p *Parser) parseSIntegerLiteral() ast.Expression {
 	return lit
 }
 
+func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
+	expression := &ast.InfixExpression{
+		Token: p.curToken,
+		Operator: p.curToken.Literal,
+		Left: left,
+	}
+
+	precedence := p.curPrecedence()
+	p.nextToken()
+	expression.Right = p.parseExpression(precedence)
+	return expression
+}
