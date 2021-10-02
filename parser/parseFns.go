@@ -156,7 +156,7 @@ func (p *Parser) parseGroup() ast.Expression {
 }
 
 func (p *Parser) parseSInt() ast.Expression {
-	lit := &ast.SIntegerLiteral{Token: p.curToken}
+	lit := &ast.SInt{Token: p.curToken}
 
 	value, err := strconv.ParseInt(p.curToken.Literal, 10, 0)
 	if err != nil {
@@ -171,7 +171,7 @@ func (p *Parser) parseSInt() ast.Expression {
 }
 
 func (p *Parser) parseUInt() ast.Expression {
-	lit := &ast.UIntegerLiteral{Token: p.curToken}
+	lit := &ast.UInt{Token: p.curToken}
 
 	value, err := strconv.ParseUint(p.curToken.Literal, 10, 0)
 	if err != nil {
