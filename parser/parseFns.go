@@ -206,23 +206,23 @@ func (p *Parser) parseBytes() ast.Expression {
 func (p *Parser) parseAssignExpression() *ast.AssignmentExpr {
 	expr := &ast.AssignmentExpr{Name: &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}}
 
-	if !(
-		p.expectPeek(tk.SET_VAL) || 
-		p.expectPeek(tk.SET_CONST) || 
-		p.expectPeek(tk.SET_WEAK) || 
-		p.expectPeek(tk.SET_BIND) || 
-		p.expectPeek(tk.SET_PLUS) || 
-		p.expectPeek(tk.SET_MINUS) || 
-		p.expectPeek(tk.SET_TYPE)){
+	if !( 
+		p.peekTokenIs(tk.SET_VAL) || 
+		p.peekTokenIs(tk.SET_CONST) || 
+		p.peekTokenIs(tk.SET_WEAK) || 
+		p.peekTokenIs(tk.SET_BIND) || 
+		p.peekTokenIs(tk.SET_PLUS) || 
+		p.peekTokenIs(tk.SET_MINUS) || 
+		p.peekTokenIs(tk.SET_TYPE)
+		){
 		return nil
 	}
 
+	p.nextToken()
 	expr.Token = p.curToken
+	p.nextToken()
 
-	// for now, skip past p.parseExpression() with this for loop
-	for !p.curTokenIs(tk.EOL){
-		p.nextToken()
-	}
+	expr.Value = p.parseExpression(LOWEST)
 
 	return expr 
 	
