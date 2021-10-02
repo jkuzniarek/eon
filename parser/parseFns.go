@@ -158,7 +158,7 @@ func (p *Parser) parseGroup() ast.Expression {
 func (p *Parser) parseSInt() ast.Expression {
 	lit := &ast.SIntegerLiteral{Token: p.curToken}
 
-	value, err := strconv.ParseInt(p.curToken.Literal, 0, 0)
+	value, err := strconv.ParseInt(p.curToken.Literal, 10, 0)
 	if err != nil {
 		msg := fmt.Sprintf("could not parse %q as signed integer", p.curToken.Literal)
 		p.errors = append(p.errors, msg)
@@ -173,7 +173,7 @@ func (p *Parser) parseSInt() ast.Expression {
 func (p *Parser) parseUInt() ast.Expression {
 	lit := &ast.UIntegerLiteral{Token: p.curToken}
 
-	value, err := strconv.ParseUint(p.curToken.Literal, 0, 0)
+	value, err := strconv.ParseUint(p.curToken.Literal, 10, 0)
 	if err != nil {
 		msg := fmt.Sprintf("could not parse %q as unsigned integer", p.curToken.Literal)
 		p.errors = append(p.errors, msg)
