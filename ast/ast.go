@@ -128,50 +128,21 @@ func (ie *Infix) String() string {
 	return out.String()
 }
 
-// consult for others
-// type IfExpression struct {
-// 	Token token.Token // The 'if' token
-// 	Condition Expression
-// 	Consequence *BlockCommand
-// 	Alternative *BlockCommand
-// }
+type Group struct{
+	Token token.Token // the open delimiter token
+	Expressions []Expression 
+}
 
-// func (ie *IfExpression) expressionNode(){}
-// func (ie *IfExpression) TokenLiteral() string {
-// 	return ie.Token.Literal
-// }
-// func (ie *IfExpression) String() string {
-// 	var out bytes.Buffer
+func (g *Group) expressionNode(){}
+func (g *Group) TokenLiteral() string {
+	return g.Token.Literal
+}
+func (g *Group) String() string {
+	var out bytes.Buffer
 
-// 	out.WriteString("if")
-// 	out.WriteString(ie.Condition.String())
-// 	out.WriteString(" ")
-// 	out.WriteString(ie.Consequence.String())
+	for _, e := range g.Expressions {
+		out.WriteString(e.String())
+	}
 
-// 	if ie.Alternative != nil {
-// 		out.WriteString("else ")
-// 		out.WriteString(ie.Alternative.String())
-// 	}
-
-// 	return out.String()
-// }
-
-// consult for linked_list, array
-// type BlockCommand struct{
-// 	Token token.Token // the { token
-// 	Commands []Command 
-// }
-
-// func (bs *BlockCommand) commandNode(){}
-// func (bs *BlockCommand) TokenLiteral() string {
-// 	return bs.Token.Literal
-// }
-// func (bs *BlockCommand) String() string {
-// 	var out bytes.Buffer
-
-// 	for _, s := range bs.Commands {
-// 		out.WriteString(s.String())
-// 	}
-
-// 	return out.String()
-// }
+	return out.String()
+}

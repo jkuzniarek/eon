@@ -94,6 +94,67 @@ func (p *Parser) parseCard() ast.Expression {
 // TODO
 }
 
+func (p *Parser) parseGroup() ast.Expression {
+	group := &ast.Group{Token: p.curToken}
+	group.Expressions = []ast.Expression{}
+	gType := p.curToken.TokenType
+	p.nextToken()
+	
+	if gType == tk.LPAREN {
+		exp := p.parseExpression(LOWEST)
+		if !p.expectPeek(tk.RPAREN) {
+			return nil
+		}
+		return exp
+
+	} else if gType == tk.HPAREN || gType == tk.CPAREN {
+		// loop to eval expressions until RPAREN
+		for !p.curTokenIs(tk.RPAREN) {
+			// retain comments here only. they will be stripped during conversion to a function
+			if p.curToken.TokenType == tk.EOL {
+				p.nextToken()
+				continue
+			} else if p.curToken.TokenType == tk.COMMENT {
+				exp := p.parseComment()
+			} else {
+				exp := p.parseExpression()
+			}
+			// append exp to expression list
+			if(exp != nil){
+				group.Expressions = append(group.Expressions, exp)
+			}
+			if p.peekToken.TokenType != tk.RPAREN && p.peekToken.TokenType != tk.EOL {
+				msg := fmt.Sprintf("expected next token to be EOL or RPAREN, got %s instead", p.peekToken.Type.ToStr())
+				p.errors = append(p.errors, msg)
+				return nil
+			} else {
+				p.nextToken()
+			}
+		}
+		return group
+		
+	} else {
+		switch p.curToken.TokenType {
+		case tk.LSQUAR:
+			endTok := tk.RSQUAR
+		case tk.LCURLY, tk.SCURLY:
+			endTok := tk.RCURLY
+		default:
+			p.parsingErrAt("parseExpression()")
+			return nil
+		}
+		// loop to eval expressions until group close delimiter
+		for !p.curTokenIs(endTok) {
+			exp := p.parseExpression()
+			// append exp to expression list
+			if(exp != nil){
+				group.Expressions = append(group.Expressions, exp)
+			}
+			p.nextToken()
+			return group
+	}
+}
+
 func (p *Parser) parseSInt() ast.Expression {
 	lit := &ast.SIntegerLiteral{Token: p.curToken}
 

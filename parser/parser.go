@@ -26,6 +26,7 @@ var precedences = map[tk.TokenType]int{
 	tk.GT: LESSGREATER,
 	tk.LT_EQ: LESSGREATER,
 	tk.GT_EQ: LESSGREATER,
+	tk.NAME: CALL, // TODO: confirm that this is handled by the parse functions correctly, expect that it will be handled automatically
 }
 
 
