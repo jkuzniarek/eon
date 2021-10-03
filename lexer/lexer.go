@@ -262,11 +262,12 @@ func (l *Lexer) readString() string{
 	ch := l.ch
 	position := l.position
 	another := true
+	l.readChar()
 	for another {
 		for l.ch != ch {
 			l.readChar()
 		}
-		if l.peekChar() != ch {
+		if l.ch == ch && l.peekChar() != ch {
 			another = false
 		}
 	}
