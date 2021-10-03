@@ -134,6 +134,20 @@ func (il *Str) String() string{
 	return il.Token.Literal
 }
 
+// byt
+type Byt struct{
+	Token token.Token 
+	Value []byte
+}
+
+func (il *Byt) expressionNode() {}
+func (il *Byt) TokenLiteral() string {
+	return il.Token.Literal
+}
+func (il *Byt) String() string{
+	return il.Token.Literal
+}
+
 type Infix struct {
 	Token token.Token // the operator token, eg +
 	Left Expression
