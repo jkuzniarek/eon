@@ -120,6 +120,20 @@ func (il *Dec) String() string{
 	return il.Token.Literal
 }
 
+// str
+type Str struct{
+	Token token.Token 
+	Value string
+}
+
+func (il *Str) expressionNode() {}
+func (il *Str) TokenLiteral() string {
+	return il.Token.Literal
+}
+func (il *Str) String() string{
+	return il.Token.Literal
+}
+
 type Infix struct {
 	Token token.Token // the operator token, eg +
 	Left Expression
