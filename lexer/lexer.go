@@ -214,7 +214,7 @@ func (l *Lexer) newUNumber() tk.token{
 		for isDigit(l.peekChar()){
 			l.readChar()
 		}
-		return newTokenFromSrc(tk.PRIMITIVE, tk.UDEC, &l.input, position, l.position+1)
+		return newTokenFromSrc(tk.PRIMITIVE, tk.DEC, &l.input, position, l.position+1)
 	}else{
 		return newTokenFromSrc(tk.PRIMITIVE, tk.UINT, &l.input, position, l.position+1)
 	}
@@ -231,7 +231,7 @@ func (l *Lexer) newSNumber() tk.token{
 		for isDigit(l.peekChar()){
 			l.readChar()
 		}
-		return newTokenFromSrc(tk.PRIMITIVE, tk.SDEC, &l.input, position, l.position+1)
+		return newTokenFromSrc(tk.PRIMITIVE, tk.DEC, &l.input, position, l.position+1)
 	}else{
 		return newTokenFromSrc(tk.PRIMITIVE, tk.SINT, &l.input, position, l.position+1)
 	}

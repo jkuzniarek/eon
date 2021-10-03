@@ -44,10 +44,8 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 				leftExp := parseSInt()
 			case UINT:
 				leftExp := parseUInt()
-			case SDEC:
-				leftExp := parseSDec()
-			case UDEC:
-				leftExp := parseUDec()
+			case DEC:
+				leftExp := parseDec()
 			case STR:
 				leftExp := parseStr()
 			case BYTES:
@@ -157,40 +155,38 @@ func (p *Parser) parseGroup() ast.Expression {
 
 func (p *Parser) parseSInt() ast.Expression {
 	lit := &ast.SInt{Token: p.curToken}
-
 	value, err := strconv.ParseInt(p.curToken.Literal, 10, 0)
 	if err != nil {
 		msg := fmt.Sprintf("could not parse %q as signed integer", p.curToken.Literal)
 		p.errors = append(p.errors, msg)
 		return nil
 	}
-
 	lit.Value = int(value)
-
 	return lit
 }
 
 func (p *Parser) parseUInt() ast.Expression {
 	lit := &ast.UInt{Token: p.curToken}
-
 	value, err := strconv.ParseUint(p.curToken.Literal, 10, 0)
 	if err != nil {
 		msg := fmt.Sprintf("could not parse %q as unsigned integer", p.curToken.Literal)
 		p.errors = append(p.errors, msg)
 		return nil
 	}
-
 	lit.Value = uint(value)
-
 	return lit
 }
 
-func (p *Parser) parseSDec() ast.Expression {
-// TODO
-}
-
-func (p *Parser) parseUDec() ast.Expression {
-// TODO
+func (p *Parser) parseDec() ast.Expression {
+	lit := &ast.Dec{Token: p.curToken}
+	value, err := decimal.NewFromString(p.curToken.Literal)
+	if err != nil {
+		msg := fmt.Sprintf("could not parse %q as decimal", p.curToken.Literal)
+		p.errors = append(p.errors, msg)
+		return nil
+	}
+	lit.Value = value
+	return lit
 }
 
 func (p *Parser) parseStr() ast.Expression {

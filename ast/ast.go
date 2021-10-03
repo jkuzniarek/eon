@@ -3,6 +3,7 @@ package ast
 import (
 	"eon/token"
 	"bytes"
+	decimal "github.com/shopspring/decimal"
 )
 
 // ast node
@@ -102,6 +103,20 @@ func (il *SInt) TokenLiteral() string {
 	return il.Token.Literal
 }
 func (il *SInt) String() string{
+	return il.Token.Literal
+}
+
+// dec
+type Dec struct{
+	Token token.Token 
+	Value Decimal
+}
+
+func (il *Dec) expressionNode() {}
+func (il *Dec) TokenLiteral() string {
+	return il.Token.Literal
+}
+func (il *Dec) String() string{
 	return il.Token.Literal
 }
 
