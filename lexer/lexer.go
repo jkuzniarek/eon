@@ -95,7 +95,7 @@ func (l *Lexer) NextToken() tk.Token{
 		tok = newToken(tk.KEYWORD, tk.DOLLAR, l.ch)
 	case '\':
 		if l.peekChar() == 'x' || l.peekChar() == 'd' || l.peekChar() == 'b' {
-			tok = tk.Token{Cat: tk.PRIMITIVE, Type: tk.BYTES, Literal: l.readCommentLine()}
+			tok = tk.Token{Cat: tk.PRIMITIVE, Type: tk.BYTES, Literal: l.readBytes()}
 		}
 	case 0:
 		tok.Literal = ""
