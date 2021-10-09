@@ -27,7 +27,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 	switch p.curToken.Cat {
-	case tk.NAME, tk.KEYWORD:
+	case tk.NAME:
 		leftExp := p.parseAccessor()
 	case tk.OPEN_DELIMITER:
 		leftExp := p.parseGroup()

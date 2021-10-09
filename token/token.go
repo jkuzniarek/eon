@@ -18,7 +18,6 @@ const (
 	// Identifiers & Literals
 	TYPE
 	NAME // add, foobar, x, y, ...
-	KEYWORD
 	OPEN_DELIMITER
 	CLOSE_DELIMITER
 	ACCESS_OPERATOR

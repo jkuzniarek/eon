@@ -92,7 +92,7 @@ func (l *Lexer) NextToken() tk.Token{
 			tok = l.newSNumber()
 		}
 	case '$':
-		tok = newToken(tk.KEYWORD, tk.DOLLAR, l.ch)
+		tok = newToken(tk.NAME, tk.DOLLAR, l.ch)
 	case '\':
 		if l.peekChar() == 'x' || l.peekChar() == 'd' || l.peekChar() == 'b' {
 			tok = tk.Token{Cat: tk.PRIMITIVE, Type: tk.BYTES, Literal: l.readBytes()}
@@ -110,11 +110,7 @@ func (l *Lexer) NextToken() tk.Token{
 			} else {
 				tok.Literal = l.readIdentifier()
 				tok.Type = tk.LookupName(tok.Literal)
-				if tk.IsKeyword(tok.Literal){
-					tok.Cat = tk.KEYWORD
-				}else{
-					tok.Cat = tk.NAME
-				}
+				tok.Cat = tk.NAME
 			}
 		} else if isDigit(l.ch){
 			tok = l.newUNumber()
