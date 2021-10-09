@@ -46,7 +46,7 @@ func (p *Program) String() string{
 
 type AssignmentExpr struct {
 	Token token.Token // token indicating assignment type
-	Name *Identifier // NAME token indicating name
+	Name *Name // NAME token indicating name
 	Value Expression // 
 }
 func (ae *AssignmentExpr) expressionNode() {}
@@ -66,15 +66,15 @@ func (ae *AssignmentExpr) String() string {
 	return out.String()
 }
 
-type Identifier struct {
+type Name struct {
 	Token token.Token // usually the token.NAME token
 	Value string
 }
-func (i *Identifier) expressionNode() {}
-func (i *Identifier) TokenLiteral() string {
+func (i *Name) expressionNode() {}
+func (i *Name) TokenLiteral() string {
 	return i.Token.Literal 
 }
-func (i *Identifier) String() string{
+func (i *Name) String() string{
 	return i.Value
 }
 

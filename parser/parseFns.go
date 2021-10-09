@@ -28,6 +28,14 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 	switch p.curToken.Cat {
 	case tk.NAME:
+		for !p.peekTokenIs(tk.EOL) && precedence < p.peekPrecedence() {
+			if p, ok := precedences[p.peekToken.Type]; !ok {
+				return leftExp
+			}
+	
+			p.nextToken()
+			leftExp = p.parseInfix(leftExp)
+		}
 		leftExp := p.parseAccessor()
 	case tk.OPEN_DELIMITER:
 		leftExp := p.parseGroup()
@@ -86,6 +94,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 func (p *Parser) parseAccessor() ast.Expression {
 // TODO
+
 }
 
 func (p *Parser) parseCard() ast.Expression {
@@ -354,7 +363,7 @@ return lit
 
 // FOR REFERENCE
 func (p *Parser) parseAssignExpression() *ast.AssignmentExpr {
-	expr := &ast.AssignmentExpr{Name: &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}}
+	expr := &ast.AssignmentExpr{Name: &ast.Name{Token: p.curToken, Value: p.curToken.Literal}}
 
 	if !( 
 		p.peekTokenIs(tk.SET_VAL) || 
@@ -378,8 +387,8 @@ func (p *Parser) parseAssignExpression() *ast.AssignmentExpr {
 	
 }
 
-func (p *Parser) parseIdentifier() ast.Expression {
-	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+func (p *Parser) parseName() ast.Expression {
+	return &ast.Name{Token: p.curToken, Value: p.curToken.Literal}
 }
 
 func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
