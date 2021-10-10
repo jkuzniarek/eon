@@ -106,7 +106,6 @@ var operators = map[string]TokenType {
 	"*": STAR,
 	"@": AT,
 	"|": PIPE,
-	"$": DOLLAR,
 	":": SET_VAL,
 	"::": SET_CONST,
 	":?": SET_WEAK,
