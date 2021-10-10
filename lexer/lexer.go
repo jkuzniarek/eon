@@ -96,6 +96,8 @@ func (l *Lexer) NextToken() tk.Token{
 	case '\':
 		if l.peekChar() == 'x' || l.peekChar() == 'd' || l.peekChar() == 'b' {
 			tok = tk.Token{Cat: tk.PRIMITIVE, Type: tk.BYTES, Literal: l.readBytes()}
+		} else {
+			tok = newToken(tk.BSLASH, tk.BSLASH, l.ch)
 		}
 	case 0:
 		tok.Literal = ""

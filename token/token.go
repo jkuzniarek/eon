@@ -14,7 +14,8 @@ const (
 	ILLEGAL
 	EOF
 	EOL
-
+	BSLASH
+	
 	// Identifiers & Literals
 	TYPE
 	NAME // add, foobar, x, y, ...
@@ -41,7 +42,6 @@ const (
 	RCURLY 
 	LSQUAR 
 	RSQUAR
-
 
 	// Access Operators
 	DOT 

@@ -30,7 +30,16 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	case tk.NAME:
 		leftExpr := p.parseName()
 	case tk.OPEN_DELIMITER:
-		leftExp := p.parseGroup()
+		if p.curToken.Type == tk.LPAREN {
+			p.nextToken()
+			leftExpr := p.parseExpression(LOWEST)
+			if !p.expectPeek(tk.RPAREN) {
+				p.parsingErrAt("parseExpression()")
+				return nil
+			}	
+		} else {
+			leftExp := p.parseGroup()
+		}
 	case tk.EVAL_OPERATOR:
 		if p.curToken.Type == tk.LT {
 			leftExp := p.parseCard()
@@ -68,9 +77,11 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		p.nextToken()
 		leftExp = p.parseInfix(leftExp)
 	}
+	// input handling
 	if !p.peekTokenIs(tk.EOL) {
 		leftExp = p.parseInput(leftExp)
 	}
+	
 	if !p.peekTokenIs(tk.EOL) {
 		p.parsingErrAt("parseExpression()")
 		return nil
@@ -91,6 +102,11 @@ func (p *Parser) parseCard() ast.Expression {
 		if p.peekTokenIs(tk.TYPE){
 			p.nextToken()
 			card.Type = p.curToken
+			if p.peekTokenIs(tk.BSLASH) {
+				p.nextToken()
+				p.nextToken()
+				card.Size = p.parseExpression()
+			}
 		}
 
 		for !p.peekTokenIs(tk.GT){
@@ -116,14 +132,7 @@ func (p *Parser) parseGroup() ast.Expression {
 	gType := p.curToken.TokenType
 	p.nextToken()
 	
-	if gType == tk.LPAREN {
-		exp := p.parseExpression(LOWEST)
-		if !p.expectPeek(tk.RPAREN) {
-			return nil
-		}
-		return exp
-
-	} else if gType == tk.HPAREN || gType == tk.CPAREN {
+	if gType == tk.HPAREN || gType == tk.CPAREN {
 		// loop to eval expressions until RPAREN
 		for !p.curTokenIs(tk.RPAREN) {
 			// retain comments here only. they will be stripped during conversion to a function

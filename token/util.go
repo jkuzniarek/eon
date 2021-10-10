@@ -76,6 +76,8 @@ func (t TokenType) ToStr() string {
 		return "EOF"
 	case EOL: 
 		return "EOL"
+	case BSLASH:
+		return "BSLASH"
 	
 	// Identifiers & Literals
 	case TYPE:

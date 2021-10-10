@@ -41,6 +41,7 @@ func (p *Program) String() string{
 type Card struct{
 	Token token.Token // the open delimiter token
 	Type token.Token // the type token
+	Size Expression // the array size specifier
 	Index []Expression // name and infix assign expressions
 	Body Expression // card body expression
 }
