@@ -77,28 +77,11 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	}
 	return leftExp
 
-	// // original
-	// switch p.curToken.Type {
-	// case tk.NAME, tk.INIT, tk.DEST, tk.OUT:
-	// 	switch p.peekToken.Type {
-	// 	case tk.SET_VAL, tk.SET_CONST, tk.SET_WEAK, tk.SET_BIND, tk.SET_PLUS, tk.SET_MINUS, tk.SET_TYPE:
-	// 		return p.parseAssignExpression()
-	// 	case tk.DOT, tk.SLASH, tk.OCTO, tk.STAR, tk.AT, tk.PIPE, tk.BANG, tk.DOLLAR, tk.PERCENT, tk.CARET,
-	// 	tk.TYPE_EQ, tk.EQEQ, tk.NOT_EQ, tk.LT, tk.GT, tk.LT_EQ, tk.GT_EQ:
-	// 		return p.parseInfixExpression()
-	// 	}
-	// }
-	// return leftExp
-}
 
 func (p *Parser) parseName() ast.Expression {
 	return &ast.Name{Token: p.curToken, Value: p.curToken.Literal}
 }
 
-p.nextToken()
-expression.Right = p.parseExpression(LOWEST)
-return expression
-}
 
 func (p *Parser) parseCard() ast.Expression {
 	card := &ast.Card{Token: p.curToken}
