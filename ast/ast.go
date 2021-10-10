@@ -44,23 +44,43 @@ func (p *Program) String() string{
 	return out.String()
 }
 
-type AssignmentExpr struct {
-	Token token.Token // token indicating assignment type
-	Name *Name // NAME token indicating name
-	Value Expression // 
+type Infix struct {
+	Token token.Token // the operator token, eg +
+	Left Expression
+	Operator string
+	Right Expression
 }
-func (ae *AssignmentExpr) expressionNode() {}
-func (ae *AssignmentExpr) TokenLiteral() string {
-	return ae.Token.Literal 
+
+func (ie *Infix) expressionNode(){}
+func (ie *Infix) TokenLiteral() string {
+	return ie.Token.Literal
 }
-func (ae *AssignmentExpr) String() string {
+func (ie *Infix) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(ae.Name.String())
-	out.WriteString(ae.TokenLiteral() + " ")
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString(" " + ie.Operator + " ")
+	out.WriteString(ie.Right.String())
+	out.WriteString(")")
 
-	if ae.Value != nil {
-		out.WriteString(ae.Value.String())
+	return out.String()
+}
+
+type Group struct{
+	Token token.Token // the open delimiter token
+	Expressions []Expression 
+}
+
+func (g *Group) expressionNode(){}
+func (g *Group) TokenLiteral() string {
+	return g.Token.Literal
+}
+func (g *Group) String() string {
+	var out bytes.Buffer
+
+	for _, e := range g.Expressions {
+		out.WriteString(e.String())
 	}
 
 	return out.String()
@@ -146,46 +166,4 @@ func (il *Byt) TokenLiteral() string {
 }
 func (il *Byt) String() string{
 	return il.Token.Literal
-}
-
-type Infix struct {
-	Token token.Token // the operator token, eg +
-	Left Expression
-	Operator string
-	Right Expression
-}
-
-func (ie *Infix) expressionNode(){}
-func (ie *Infix) TokenLiteral() string {
-	return ie.Token.Literal
-}
-func (ie *Infix) String() string {
-	var out bytes.Buffer
-
-	out.WriteString("(")
-	out.WriteString(ie.Left.String())
-	out.WriteString(" " + ie.Operator + " ")
-	out.WriteString(ie.Right.String())
-	out.WriteString(")")
-
-	return out.String()
-}
-
-type Group struct{
-	Token token.Token // the open delimiter token
-	Expressions []Expression 
-}
-
-func (g *Group) expressionNode(){}
-func (g *Group) TokenLiteral() string {
-	return g.Token.Literal
-}
-func (g *Group) String() string {
-	var out bytes.Buffer
-
-	for _, e := range g.Expressions {
-		out.WriteString(e.String())
-	}
-
-	return out.String()
 }
