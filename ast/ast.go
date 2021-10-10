@@ -38,6 +38,48 @@ func (p *Program) String() string{
 	return out.String()
 }
 
+type Card struct{
+	Token token.Token // the open delimiter token
+	Type token.Token // the type token
+	Index []Expression // name and infix assign expressions
+	Body Expression // card body expression
+}
+
+func (c *Card) expressionNode(){}
+func (c *Card) TokenLiteral() string {
+	return c.Token.Literal
+}
+func (c *Card) String() string {
+	var out bytes.Buffer
+	out.WriteString("<")
+
+	if c.Type != nil {
+		out.WriteString(c.Type.Literal)
+	}
+
+	if c.Index != nil {
+		if len(c.Index) == 1 {
+			out.WriteString(" ")
+			out.WriteString(c.Expressions[0].String())
+			out.WriteString("\n")
+		}else{
+			out.WriteString("\n")
+			for _, e := range c.Expressions {
+				out.WriteString(e.String())
+				out.WriteString("\n")
+			}
+		}
+	}
+
+	if c.Body != nil {
+		out.WriteString("/")
+		out.WriteString(c.Body.String())
+	}
+
+	out.WriteString(">")
+	return out.String()
+}
+
 type Input struct {
 	Left Expression
 	Input Expression

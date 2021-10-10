@@ -101,7 +101,30 @@ return expression
 }
 
 func (p *Parser) parseCard() ast.Expression {
-// TODO
+	card := &ast.Card{Token: p.curToken}
+
+	if !p.peekTokenIs(tk.GT) {
+		card.Index = []ast.Expression{}
+		if p.peekTokenIs(tk.TYPE){
+			p.nextToken()
+			card.Type = p.curToken
+		}
+
+		for !p.peekTokenIs(tk.GT){
+			p.nextToken()
+			if p.curToken.Cat == tk.NAME {
+				exp := p.parseExpression()
+				card.Index = append(card.Index, exp)
+				p.nextToken()
+			} else if p.curTokenIs(tk.SLASH){
+				p.nextToken()
+				card.Body = p.parseExpression()
+			}
+		}
+		p.nextToken()
+	}
+
+	return card
 }
 
 func (p *Parser) parseGroup() ast.Expression {
