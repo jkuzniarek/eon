@@ -34,8 +34,8 @@ foobar: 838383
 	if program == nil {
 		t.Fatalf("ParseProgram() returned nil")
 	}
-	if len(program.Commands) != 3 {
-		t.Fatalf("program.Commands does not contain 3 expressions. got=%d", len(program.Commands))
+	if len(program.Expressions) != 3 {
+		t.Fatalf("program.Expressions does not contain 3 expressions. got=%d", len(program.Expressions))
 	}
 
 	tests := []struct {
@@ -47,7 +47,7 @@ foobar: 838383
 	}
 
 	for i, tt := range tests {
-		expr := program.Commands[i]
+		expr := program.Expressions[i]
 		if !testAssignmentExpression(t, expr, tt.expectedIdentifier){
 			return
 		}
@@ -90,12 +90,12 @@ func TestIdentifierExpression(t *testing.T) {
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	if len(program.Commands) != 1 {
-		t.Fatalf("program has not enough commands. got=%d", len(program.Commands))
+	if len(program.Expressions) != 1 {
+		t.Fatalf("program has not enough Expressions. got=%d", len(program.Expressions))
 	}
-	cmd, ok := program.Commands[0].(ast.Expression)
+	cmd, ok := program.Expressions[0].(ast.Expression)
 	if !ok {
-		t.Fatalf("program.Commands[0] is not ast.Expression. got=%T", program.Commands[0])
+		t.Fatalf("program.Expressions[0] is not ast.Expression. got=%T", program.Expressions[0])
 	}
 
 	name, ok := cmd.(*ast.Identifier)
@@ -118,12 +118,12 @@ func TestUIntegerLiteralExpression(t *testing.T) {
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	if len(program.Commands) != 1 {
-		t.Fatalf("program has not enough commands. got=%d", len(program.Commands))
+	if len(program.Expressions) != 1 {
+		t.Fatalf("program has not enough Expressions. got=%d", len(program.Expressions))
 	}
-	cmd, ok := program.Commands[0].(ast.Expression)
+	cmd, ok := program.Expressions[0].(ast.Expression)
 	if !ok {
-		t.Fatalf("program.Commands[0] is not ast.Expression. got=%T", program.Commands[0])
+		t.Fatalf("program.Expressions[0] is not ast.Expression. got=%T", program.Expressions[0])
 	}
 
 	literal, ok := cmd.(*ast.UIntegerLiteral)
@@ -146,12 +146,12 @@ func TestSIntegerLiteralExpression(t *testing.T) {
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	if len(program.Commands) != 1 {
-		t.Fatalf("program has not enough commands. got=%d", len(program.Commands))
+	if len(program.Expressions) != 1 {
+		t.Fatalf("program has not enough Expressions. got=%d", len(program.Expressions))
 	}
-	cmd, ok := program.Commands[0].(ast.Expression)
+	cmd, ok := program.Expressions[0].(ast.Expression)
 	if !ok {
-		t.Fatalf("program.Commands[0] is not ast.Expression. got=%T", program.Commands[0])
+		t.Fatalf("program.Expressions[0] is not ast.Expression. got=%T", program.Expressions[0])
 	}
 
 	literal, ok := cmd.(*ast.SIntegerLiteral)

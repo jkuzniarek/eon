@@ -11,12 +11,12 @@ import (
 
 func (p *Parser) ParseProgram() *ast.Program {
 	program := &ast.Program{}
-	program.Commands = []ast.Expression{}
+	program.Expressions = []ast.Expression{}
 
 	for !p.curTokenIs(tk.EOF) {
 		expr := p.parseExpression(LOWEST)
 		if expr != nil {
-			program.Commands = append(program.Commands, expr)
+			program.Expressions = append(program.Expressions, expr)
 		}
 		p.nextToken()
 	}
@@ -67,6 +67,13 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 		p.nextToken()
 		leftExp = p.parseInfix(leftExp)
+	}
+	if !p.peekTokenIs(tk.EOL) {
+		leftExp = p.parseInput(leftExp)
+	}
+	if !p.peekTokenIs(tk.EOL) {
+		p.parsingErrAt("parseExpression()")
+		return nil
 	}
 	return leftExp
 
@@ -158,7 +165,6 @@ func (p *Parser) parseGroup() ast.Expression {
 	}
 }
 
-
 func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
 	expression := &ast.Infix{
 		Token: p.curToken,
@@ -172,28 +178,11 @@ func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
 	return expression
 }
 
-// FOR REFERENCE
-// func (p *Parser) parseAssignExpression() *ast.AssignmentExpr {
-// 	expr := &ast.AssignmentExpr{Name: &ast.Name{Token: p.curToken, Value: p.curToken.Literal}}
-
-// 	if !( 
-// 		p.peekTokenIs(tk.SET_VAL) || 
-// 		p.peekTokenIs(tk.SET_CONST) || 
-// 		p.peekTokenIs(tk.SET_WEAK) || 
-// 		p.peekTokenIs(tk.SET_BIND) || 
-// 		p.peekTokenIs(tk.SET_PLUS) || 
-// 		p.peekTokenIs(tk.SET_MINUS) || 
-// 		p.peekTokenIs(tk.SET_TYPE)
-// 		){
-// 		return nil
-// 	}
-
-// 	p.nextToken()
-// 	expr.Token = p.curToken
-// 	p.nextToken()
-
-// 	expr.Value = p.parseExpression(LOWEST)
-
-// 	return expr 
-	
-// }
+func (p *Parser) parseInput(left ast.Expression) ast.Expression {
+	expression := &ast.Input{
+		Left: left,
+	}
+	p.nextToken()
+	expression.Input = p.parseExpression(LOWEST)
+	return expression
+}

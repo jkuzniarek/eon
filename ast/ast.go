@@ -12,12 +12,6 @@ type Node interface {
 	String() string
 }
 
-// remove?
-type Command interface {
-	Node
-	commandNode()
-}
-
 type Expression interface {
 	Node 
 	expressionNode()
@@ -25,11 +19,11 @@ type Expression interface {
 
 // eventually rename to Root
 type Program struct {
-	Commands []Expression 
+	Expressions []Expression 
 }
 func (p *Program) TokenLiteral() string {
-	if len(p.Commands) > 0 {
-		return p.Commands[0].TokenLiteral()
+	if len(p.Expressions) > 0 {
+		return p.Expressions[0].TokenLiteral()
 	} else {
 		return ""
 	}
@@ -37,10 +31,29 @@ func (p *Program) TokenLiteral() string {
 func (p *Program) String() string{
 	var out bytes.Buffer
 
-	for _, s := range p.Commands{
+	for _, s := range p.Expressions{
 		out.WriteString(s.String())
 	}
 
+	return out.String()
+}
+
+type Input struct {
+	Left Expression
+	Input Expression
+}
+
+func (i *Input) expressionNode(){}
+func (i *Input) TokenLiteral() string {
+	return nil
+}
+func (i *Input) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(ie.Left.String())
+	out.WriteString(" ")
+	out.WriteString(ie.Input.String())
+	
 	return out.String()
 }
 
