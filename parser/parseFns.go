@@ -2,9 +2,7 @@ package parser
 
 import (
 	"eon/ast"
-	"eon/lexer"
 	tk "eon/token"
-	"strconv"
 	"fmt"
 )
 
@@ -87,14 +85,14 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		return nil
 	}
 	return leftExp
+}
 
-
-func (p *Parser) parseName() ast.Expression {
+func (p *Parser) parseName() *ast.Name {
 	return &ast.Name{Token: p.curToken, Value: p.curToken.Literal}
 }
 
 
-func (p *Parser) parseCard() ast.Expression {
+func (p *Parser) parseCard() *ast.Card {
 	card := &ast.Card{Token: p.curToken}
 
 	if !p.peekTokenIs(tk.GT) {
@@ -126,7 +124,7 @@ func (p *Parser) parseCard() ast.Expression {
 	return card
 }
 
-func (p *Parser) parseGroup() ast.Expression {
+func (p *Parser) parseGroup() *ast.Group {
 	group := &ast.Group{Token: p.curToken}
 	group.Expressions = []ast.Expression{}
 	gType := p.curToken.TokenType
@@ -177,6 +175,7 @@ func (p *Parser) parseGroup() ast.Expression {
 			}
 			p.nextToken()
 			return group
+		}
 	}
 }
 
