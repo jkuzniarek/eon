@@ -1,10 +1,9 @@
 package token
 
 type TokenType int
-type CatType int
 
 type Token struct{
-	Cat CatType
+	Cat TokenType
 	Type TokenType
 	Literal string
 }
