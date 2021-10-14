@@ -40,7 +40,7 @@ func (p *Program) String() string{
 
 type Card struct{
 	Token tk.Token // the open delimiter token
-	Type tk.Token // the type token
+	Type string // the type literal
 	Size Expression // the array size specifier
 	Index []Expression // name and infix assign expressions
 	Body Expression // card body expression
@@ -52,20 +52,21 @@ func (c *Card) TokenLiteral() string {
 }
 func (c *Card) String() string {
 	var out bytes.Buffer
+	iLen := len(c.Index)
 	out.WriteString("<")
 
-	if c.Type != nil {
-		out.WriteString(c.Type.Literal)
+	if c.Type != "" {
+		out.WriteString(c.Type)
 	}
 
-	if c.Index != nil {
-		if len(c.Index) == 1 {
+	if iLen != 0 {
+		if iLen == 1 {
 			out.WriteString(" ")
-			out.WriteString(c.Expressions[0].String())
+			out.WriteString(c.Index[0].String())
 			out.WriteString("\n")
 		}else{
 			out.WriteString("\n")
-			for _, e := range c.Expressions {
+			for _, e := range c.Index {
 				out.WriteString(e.String())
 				out.WriteString("\n")
 			}
@@ -88,14 +89,14 @@ type Input struct {
 
 func (i *Input) expressionNode(){}
 func (i *Input) TokenLiteral() string {
-	return nil
+	return i.Left.TokenLiteral()
 }
 func (i *Input) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(ie.Left.String())
+	out.WriteString(i.Left.String())
 	out.WriteString(" ")
-	out.WriteString(ie.Input.String())
+	out.WriteString(i.Input.String())
 	
 	return out.String()
 }
