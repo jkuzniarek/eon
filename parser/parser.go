@@ -1,11 +1,8 @@
 package parser 
 
 import (
-	"eon/ast"
 	"eon/lexer"
 	tk "eon/token"
-	"strconv"
-	"fmt"
 )
 
 const (
