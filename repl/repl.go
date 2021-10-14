@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"eon/lexer"
-	"eon/token"
+	"eon/parser"
 )
 
 const PROMPT = ">_ "
