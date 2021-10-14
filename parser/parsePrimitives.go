@@ -2,8 +2,6 @@ package parser
 
 import (
 	"eon/ast"
-	"eon/lexer"
-	tk "eon/token"
 	"strconv"
 	"fmt"
 )
@@ -114,7 +112,7 @@ case 'd':
 	i := 0
 	for src[position] != '\\' {
 		if isDecChar(src[position]){
-			for i < 3; i++ {
+			for i < 3 {
 				// ensure digit range only encompasses digits of ints between 000-255
 				if i == 0 && (48 <= src[position] <= 50){
 					i++
@@ -122,16 +120,14 @@ case 'd':
 				} else if (
 					i == 1 && 
 					(48 <= src[position-1] <= 49 || 
-						(src[position-1] == 50 && (48 <= src[position] <= 53)))
-				){
+						(src[position-1] == 50 && (48 <= src[position] <= 53)))){
 					i++
 					position++
 				} else if (
 					i == 2 && 
 					(48 <= src[position-2] <= 49 || 
 						(src[position-2] == 50 && (48 <= src[position-1] <= 52 ||
-							(src[position-1] == 53 && (48 <= src[position] <= 53)) )))
-				){
+							(src[position-1] == 53 && (48 <= src[position] <= 53)) )))){
 					i++
 					position++
 				} else {
@@ -167,7 +163,7 @@ case 'b':
 		if isBinChar(src[position]){
 			i++
 			position++
-			for i < 8; i++ {
+			for i < 8 {
 				if isBinChar(src[position]) {
 					i++
 					position++
