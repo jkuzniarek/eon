@@ -17,7 +17,7 @@ func LookupOp(op string) TokenType {
 }
 
 func IsKeyword(ident string) bool {
-	if tok, ok := keywords[ident]; ok {
+	if _, ok := keywords[ident]; ok {
 		return true
 	}
 	return false
