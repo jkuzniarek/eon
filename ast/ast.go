@@ -1,9 +1,9 @@
 package ast
 
 import (
-	"eon/token"
+	tk "eon/token"
 	"bytes"
-	decimal "github.com/shopspring/decimal"
+	ssDec "github.com/shopspring/decimal"
 )
 
 // ast node
@@ -39,8 +39,8 @@ func (p *Program) String() string{
 }
 
 type Card struct{
-	Token token.Token // the open delimiter token
-	Type token.Token // the type token
+	Token tk.Token // the open delimiter token
+	Type tk.Token // the type token
 	Size Expression // the array size specifier
 	Index []Expression // name and infix assign expressions
 	Body Expression // card body expression
@@ -101,7 +101,7 @@ func (i *Input) String() string {
 }
 
 type Infix struct {
-	Token token.Token // the operator token, eg +
+	Token tk.Token // the operator token, eg +
 	Left Expression
 	Operator string
 	Right Expression
@@ -124,7 +124,7 @@ func (ie *Infix) String() string {
 }
 
 type Group struct{
-	Token token.Token // the open delimiter token
+	Token tk.Token // the open delimiter token
 	Expressions []Expression 
 }
 
@@ -143,7 +143,7 @@ func (g *Group) String() string {
 }
 
 type Name struct {
-	Token token.Token // usually the token.NAME token
+	Token tk.Token // usually the tk.NAME token
 	Value string
 }
 func (i *Name) expressionNode() {}
@@ -156,7 +156,7 @@ func (i *Name) String() string{
 
 // unsigned int
 type UInt struct{
-	Token token.Token 
+	Token tk.Token 
 	Value uint
 }
 
@@ -170,7 +170,7 @@ func (il *UInt) String() string{
 
 // signed int
 type SInt struct{
-	Token token.Token 
+	Token tk.Token 
 	Value int
 }
 
@@ -184,8 +184,8 @@ func (il *SInt) String() string{
 
 // dec
 type Dec struct{
-	Token token.Token 
-	Value Decimal
+	Token tk.Token 
+	Value ssDec.Decimal
 }
 
 func (il *Dec) expressionNode() {}
@@ -193,12 +193,12 @@ func (il *Dec) TokenLiteral() string {
 	return il.Token.Literal
 }
 func (il *Dec) String() string{
-	return il.Token.Literal
+	return il.Value.String()
 }
 
 // str
 type Str struct{
-	Token token.Token 
+	Token tk.Token 
 	Value string
 }
 
@@ -212,7 +212,7 @@ func (il *Str) String() string{
 
 // byt
 type Byt struct{
-	Token token.Token 
+	Token tk.Token 
 	Value []byte
 }
 
