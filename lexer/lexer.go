@@ -93,7 +93,7 @@ func (l *Lexer) NextToken() tk.Token{
 		}
 	case '$':
 		tok = newToken(tk.NAME, tk.DOLLAR, l.ch)
-	case '\':
+	case '\\':
 		if l.peekChar() == 'x' || l.peekChar() == 'd' || l.peekChar() == 'b' {
 			tok = tk.Token{Cat: tk.PRIMITIVE, Type: tk.BYTES, Literal: l.readBytes()}
 		} else {
@@ -201,7 +201,7 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
-func (l *Lexer) newUNumber() tk.token{
+func (l *Lexer) newUNumber() tk.Token{
 	position := l.position
 	for isDigit(l.peekChar()){
 		l.readChar()
@@ -218,7 +218,7 @@ func (l *Lexer) newUNumber() tk.token{
 	}
 }
 
-func (l *Lexer) newSNumber() tk.token{
+func (l *Lexer) newSNumber() tk.Token{
 	position := l.position
 	for isDigit(l.peekChar()){
 		l.readChar()
@@ -276,7 +276,7 @@ func (l *Lexer) readString() string{
 func (l *Lexer) readBytes() string{
 	position := l.position
 	l.readChar()
-	for l.ch != '\' {
+	for l.ch != '\\' {
 		l.readChar()
 	}
 	return l.input[position:l.position+1]

@@ -83,7 +83,7 @@ position := 2
 count := 0
 switch ch {
 case 'x':
-	for src[position] != '\' {
+	for src[position] != '\\' {
 		if isHexChar(src[position]) && isHexChar(src[position+1]) {
 			count++
 			position = position + 2
@@ -101,7 +101,7 @@ case 'x':
 	value := [count]byte 
 	count = 0
 	position = 2
-	for src[position] != '\' {
+	for src[position] != '\\' {
 		if isHexChar(src[position]) && isHexChar(src[position+1]) {
 			value[count] = hexToByte(src[position:(position+2)])
 			count++
@@ -112,7 +112,7 @@ case 'x':
 	}
 case 'd':
 	i := 0
-	for src[position] != '\' {
+	for src[position] != '\\' {
 		if isDecChar(src[position]){
 			for i < 3; i++ {
 				// ensure digit range only encompasses digits of ints between 000-255
@@ -152,7 +152,7 @@ case 'd':
 	value := [count]byte 
 	count = 0
 	position = 2
-	for src[position] != '\' {
+	for src[position] != '\\' {
 		if isDecChar(src[position]){
 			value[count] = decToByte(src[position:(position+3)])
 			count++
@@ -163,7 +163,7 @@ case 'd':
 	}
 case 'b':
 	i := 0
-	for src[position] != '\' {
+	for src[position] != '\\' {
 		if isBinChar(src[position]){
 			i++
 			position++
@@ -189,7 +189,7 @@ case 'b':
 	value := [count]byte 
 	count = 0
 	position = 2
-	for src[position] != '\' {
+	for src[position] != '\\' {
 		if isBinChar(src[position]){
 			value[count] = binToByte(src[position:(position+8)])
 			count++
