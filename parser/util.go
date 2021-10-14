@@ -90,7 +90,7 @@ func isBinChar(ch byte) bool{
 func hexToByte(src string) byte {
 	i := 0
 	out := [2]byte
-	for i < 2; i++ {
+	for i < 2 {
 		switch src[i] {
 		case 48:
 			out[i] = 0
@@ -125,6 +125,7 @@ func hexToByte(src string) byte {
 		case 70:
 			out[i] = 15
 		}
+		i += 1
 	}
 	return (src[0]*16)+src[1]
 }
@@ -132,7 +133,7 @@ func hexToByte(src string) byte {
 func decToByte(src string) byte {
 	i := 0
 	out := [3]byte
-	for i < 3; i++ {
+	for i < 3 {
 		switch src[i] {
 		case 48:
 			out[i] = 0
@@ -155,6 +156,7 @@ func decToByte(src string) byte {
 		case 57:
 			out[i] = 9
 		}
+		i += 1
 	}
 	return (src[0]*100)+(src[1]*10)+src[2]
 }
@@ -162,13 +164,14 @@ func decToByte(src string) byte {
 func binToByte(src string) byte {
 	i := 0
 	out := [8]byte
-	for i < 8; i++ {
+	for i < 8 {
 		switch src[i] {
 		case 48:
 			out[i] = 0
 		case 49:
 			out[i] = 1
 		}
+		i += 1
 	}
 	return (src[0]*128)+(src[1]*64)+(src[2]*32)+(src[3]*16)+(src[4]*8)+(src[5]*4)+(src[6]*2)+src[7]
 }
