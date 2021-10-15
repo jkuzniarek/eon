@@ -48,8 +48,6 @@ type Parser struct {
 	peekToken tk.Token
 
 	shellEnv bool
-
-	infixParseFns map[tk.TokenType]infixParseFn
 }
 
 func New(l *lexer.Lexer, sh bool) *Parser {

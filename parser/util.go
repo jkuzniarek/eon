@@ -46,10 +46,6 @@ func (p *Parser) parsingErrAt(location string) {
 	p.errors = append(p.errors, msg)
 }
 
-func (p *Parser) registerInfix(tokenType tk.TokenType, fn infixParseFn) {
-	p.infixParseFns[tokenType] = fn
-}
-
 func (p *Parser) peekPrecedence() int {
 	if p, ok := precedences[p.peekToken.Type]; ok {
 		return p 
@@ -65,23 +61,23 @@ func (p *Parser) curPrecedence() int {
 }
 
 func isHexChar(ch byte) bool{
-	if 48 <= src[position] <= 57 {
+	if 48 <= ch && ch <= 57 {
 		return true
-	} else if 65 <= src[position] <= 70 {
+	} else if 65 <= ch && ch <= 70 {
 		return true
 	}
 	return false
 }
 
 func isIntChar(ch byte) bool{
-	if 48 <= src[position] <= 57 {
+	if 48 <= ch && ch <= 57 {
 		return true
 	}
 	return false
 }
 
 func isBinChar(ch byte) bool{
-	if 48 <= src[position] <= 49 {
+	if 48 <= ch && ch <= 49 {
 		return true
 	}
 	return false
@@ -89,7 +85,7 @@ func isBinChar(ch byte) bool{
 
 func hexToByte(src string) byte {
 	i := 0
-	out := [2]byte
+	out := make([]byte, 2)
 	for i < 2 {
 		switch src[i] {
 		case 48:
@@ -132,7 +128,7 @@ func hexToByte(src string) byte {
 
 func decToByte(src string) byte {
 	i := 0
-	out := [3]byte
+	out := make([]byte, 3)
 	for i < 3 {
 		switch src[i] {
 		case 48:
@@ -163,7 +159,7 @@ func decToByte(src string) byte {
 
 func binToByte(src string) byte {
 	i := 0
-	out := [8]byte
+	out := make([]byte, 8)
 	for i < 8 {
 		switch src[i] {
 		case 48:
