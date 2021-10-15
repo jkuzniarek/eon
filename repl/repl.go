@@ -22,7 +22,7 @@ func Start(in io.Reader, out io.Writer) {
 
 		line := scanner.Text()
 		l := lexer.New(line)
-		p := Parser.New(l, true)
+		p := parser.New(l, true)
 
 		program := p.ParseProgram()
 
