@@ -44,7 +44,6 @@ func (p *Parser) parseDec() ast.Expression {
 }
 
 func (p *Parser) parseStr() ast.Expression {
-// TODO
 	lit := &ast.Str{Token: p.curToken}
 	src := p.curToken.Literal
 	srcLen := len(src)
@@ -202,3 +201,17 @@ default:
 lit.Value = value
 return lit
 }
+
+func (p *Parser) parseComment() ast.Expression {
+		lit := &ast.Comment{Token: p.curToken}
+		src := p.curToken.Literal
+		srcLen := len(src)
+		if src[1] == '*' {
+			lit.Multiline = true
+			lit.Value = src[2:(srcLen-2)]
+		}else{
+			lit.Multiline = false
+			lit.Value = src[2:(srcLen-1)]
+		}
+		return lit
+	}
