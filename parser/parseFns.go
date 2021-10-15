@@ -26,21 +26,21 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	var leftExp ast.Expression
 	switch p.curToken.Cat {
 	case tk.NAME:
-		leftExp := p.parseName()
+		leftExp = p.parseName()
 	case tk.OPEN_DELIMITER:
 		if p.curToken.Type == tk.LPAREN {
 			p.nextToken()
-			leftExp := p.parseExpression(LOWEST)
+			leftExp = p.parseExpression(LOWEST)
 			if !p.expectPeek(tk.RPAREN) {
 				p.parsingErrAt("parseExpression()")
 				return nil
 			}	
 		} else {
-			leftExp := p.parseGroup()
+			leftExp = p.parseGroup()
 		}
 	case tk.EVAL_OPERATOR:
 		if p.curToken.Type == tk.LT {
-			leftExp := p.parseCard()
+			leftExp = p.parseCard()
 		} else {
 			p.parsingErrAt("parseExpression()")
 			return nil
@@ -48,15 +48,15 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	case tk.PRIMITIVE:
 		switch p.curToken.Type {
 			case tk.SINT: 
-				leftExp := p.parseSInt()
+				leftExp = p.parseSInt()
 			case tk.UINT:
-				leftExp := p.parseUInt()
+				leftExp = p.parseUInt()
 			case tk.DEC:
-				leftExp := p.parseDec()
+				leftExp = p.parseDec()
 			case tk.STR:
-				leftExp := p.parseStr()
+				leftExp = p.parseStr()
 			case tk.BYTES:
-				leftExp := p.parseBytes()
+				leftExp = p.parseBytes()
 			default:
 				p.parsingErrAt("parseExpression()")
 				return nil
@@ -68,7 +68,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 
 	// infix handling
 	for !p.peekTokenIs(tk.EOL) && precedence < p.peekPrecedence() {
-		if p, ok := precedences[p.peekToken.Type]; !ok {
+		if _, ok := precedences[p.peekToken.Type]; !ok {
 			return leftExp
 		}
 
@@ -140,9 +140,9 @@ func (p *Parser) parseGroup() *ast.Group {
 				p.nextToken()
 				continue
 			} else if p.curToken.Type == tk.COMMENT {
-				exp := p.parseComment()
+				exp = p.parseComment()
 			} else {
-				exp := p.parseExpression(LOWEST)
+				exp = p.parseExpression(LOWEST)
 			}
 			// append exp to expression list
 			if exp != nil {
@@ -159,16 +159,16 @@ func (p *Parser) parseGroup() *ast.Group {
 	} else {
 		switch p.curToken.Type {
 		case tk.LSQUAR:
-			endTok := tk.RSQUAR
+			endTok = tk.RSQUAR
 		case tk.LCURLY, tk.SCURLY:
-			endTok := tk.RCURLY
+			endTok = tk.RCURLY
 		default:
 			p.parsingErrAt("parseExpression()")
 			return nil
 		}
 		// loop to eval expressions until group close delimiter
 		for !p.curTokenIs(endTok) {
-			exp := p.parseExpression(LOWEST)
+			exp = p.parseExpression(LOWEST)
 			// append exp to expression list
 			if(exp != nil){
 				group.Expressions = append(group.Expressions, exp)
