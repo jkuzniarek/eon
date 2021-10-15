@@ -82,6 +82,18 @@ func (t TokenType) ToStr() string {
 	// Identifiers & Literals
 	case TYPE:
 		return "TYPE"
+	case OPEN_DELIMITER:
+		return "OPEN_DELIMITER"
+	case CLOSE_DELIMITER:
+		return "CLOSE_DELIMITER"
+	case ACCESS_OPERATOR:
+		return "ACCESS_OPERATOR"
+	case ASSIGN_OPERATOR:
+		return "ASSIGN_OPERATOR"
+	case EVAL_OPERATOR:
+		return "EVAL_OPERATOR"
+	case PRIMITIVE:
+		return "PRIMITIVE"
 	case NAME: 
 		return "NAME"
 	case UINT:
