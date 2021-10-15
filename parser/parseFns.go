@@ -47,11 +47,21 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	case tk.OPEN_DELIMITER:
 		if p.curToken.Type == tk.LPAREN {
 			p.nextToken()
-			leftExp = p.parseExpression(LOWEST)
-			if !p.expectPeek(tk.RPAREN) {
-				p.parsingErrAt("parseExpression() 1")
-				return nil
-			}	
+			if p.closeCard {
+				p.closeCard = false
+				leftExp = p.parseExpression(LOWEST)
+				p.closeCard = true
+				if !p.expectPeek(tk.RPAREN) {
+					p.parsingErrAt("parseExpression() 1")
+					return nil
+				}	
+			}else{
+				leftExp = p.parseExpression(LOWEST)
+				if !p.expectPeek(tk.RPAREN) {
+					p.parsingErrAt("parseExpression() 1")
+					return nil
+				}	
+			}
 		} else {
 			leftExp = p.parseGroup()
 		}
@@ -89,7 +99,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	}
 
 	// infix handling
-	for !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && precedence < p.peekPrecedence() {
+	for !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && !(p.closeCard && p.peekTokenIs(tk.GT)) && precedence < p.peekPrecedence() {
 		if _, ok := precedences[p.peekToken.Type]; !ok {
 			return leftExp
 		}
@@ -98,7 +108,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		leftExp = p.parseInfix(leftExp)
 	}
 	// input handling
-	if !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && p.peekToken.Cat != tk.CLOSE_DELIMITER {
+	if !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && p.peekToken.Cat != tk.CLOSE_DELIMITER && !(p.closeCard && p.peekTokenIs(tk.GT)) {
 		leftExp = p.parseInput(leftExp)
 	}
 	return leftExp
@@ -112,33 +122,37 @@ func (p *Parser) parseName() *ast.Name {
 
 func (p *Parser) parseCard() *ast.Card {
 	p.addTrace("parseCard()")
+	p.closeCard = true
 	card := &ast.Card{Token: p.curToken}
 
 	if !p.peekTokenIs(tk.GT) {
 		card.Index = []ast.Expression{}
-		if p.peekTokenIs(tk.TYPE){
-			p.nextToken()
+		p.nextToken()
+		// parse type
+		if p.curTokenIs(tk.TYPE){
 			card.Type = p.curToken.Literal
-			if p.peekTokenIs(tk.BSLASH) {
-				p.nextToken()
+			p.nextToken()
+			if p.curTokenIs(tk.BSLASH) {
 				p.nextToken()
 				card.Size = p.parseExpression(LOWEST)
 			}
 		}
 
-		for !p.peekTokenIs(tk.GT){
+		var exp ast.Expression
+		// parse index
+		for !p.curTokenIs(tk.GT) && !p.curTokenIs(tk.SLASH) && p.curToken.Cat == tk.NAME {
+			exp = p.parseExpression(LOWEST)
+			card.Index = append(card.Index, exp)
 			p.nextToken()
-			if p.curToken.Cat == tk.NAME {
-				exp := p.parseExpression(LOWEST)
-				card.Index = append(card.Index, exp)
-				p.nextToken()
-			} else if p.curTokenIs(tk.SLASH){
-				p.nextToken()
-				card.Body = p.parseExpression(LOWEST)
-			}
+		}
+
+		// parse body
+		if p.curTokenIs(tk.SLASH) {
+			p.nextToken()
+			card.Body = p.parseExpression(LOWEST)
 		}
 	}
-	p.nextToken()
+	p.closeCard = false
 	return card
 }
 

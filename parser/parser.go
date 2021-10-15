@@ -49,6 +49,7 @@ type Parser struct {
 
 	shellEnv bool
 	Trace string
+	closeCard bool
 }
 
 func New(l *lexer.Lexer, sh bool) *Parser {
@@ -57,6 +58,7 @@ func New(l *lexer.Lexer, sh bool) *Parser {
 		shellEnv: sh,
 		errors: []string{},
 		Trace: "",
+		closeCard: false,
 	}
 
 
