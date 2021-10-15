@@ -20,14 +20,14 @@ func Start(in io.Reader, out io.Writer) {
 			return
 		}
 
-		line := scanner.Text()
+		line := "(-"+scanner.Text()+")"
 		l := lexer.New(line)
 		p := parser.New(l, true)
 
-		program := p.ParseProgram()
+		program := p.ParseShell()
 
 		if len(p.Errors()) != 0 {
-			printParserErrors(out, p.Errors())
+			printParserErrors(out, p.Errors(), p.Trace)
 			continue
 		}
 
@@ -36,8 +36,9 @@ func Start(in io.Reader, out io.Writer) {
 	}
 }
 
-func printParserErrors(out io.Writer, errors []string) {
+func printParserErrors(out io.Writer, errors []string, t string) {
 	for _, msg := range errors {
 		io.WriteString(out, "\t"+msg+"\n")
 	}
+	io.WriteString(out, "\tTrace: "+t+"\n")
 }

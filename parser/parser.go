@@ -31,7 +31,7 @@ var precedences = map[tk.TokenType]int{
 	tk.SET_PLUS: ASSIGN,
 	tk.SET_MINUS: ASSIGN,
 	tk.SET_TYPE: ASSIGN,
-	tk.NAME: CALL, // TODO: confirm that this is handled by the parse functions correctly, expect that it will be handled automatically
+	// tk.NAME: CALL, // TODO: confirm that this is handled by the parse functions correctly, expect that it will be handled automatically
 	tk.DOT: CALL,
 	tk.SLASH: CALL,
 	tk.OCTO: CALL,
@@ -48,6 +48,7 @@ type Parser struct {
 	peekToken tk.Token
 
 	shellEnv bool
+	Trace string
 }
 
 func New(l *lexer.Lexer, sh bool) *Parser {
@@ -55,6 +56,7 @@ func New(l *lexer.Lexer, sh bool) *Parser {
 		l: l,
 		shellEnv: sh,
 		errors: []string{},
+		Trace: "",
 	}
 
 
@@ -66,3 +68,6 @@ func New(l *lexer.Lexer, sh bool) *Parser {
 	return p 
 }
 
+func (p *Parser) addTrace(s string) {
+	p.Trace += " /"+s
+}

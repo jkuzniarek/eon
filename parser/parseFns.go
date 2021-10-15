@@ -4,6 +4,7 @@ import (
 	"eon/ast"
 	tk "eon/token"
 	"fmt"
+	sc "strconv"
 )
 
 
@@ -22,7 +23,23 @@ func (p *Parser) ParseProgram() *ast.Program {
 	return program 
 }
 
+func (p *Parser) ParseShell() *ast.Program {
+	program := &ast.Program{}
+	program.Expressions = []ast.Expression{}
+
+	for !p.curTokenIs(tk.EOF) {
+		expr := p.parseGroup()
+		if expr != nil {
+			program.Expressions = append(program.Expressions, expr)
+		}
+		p.nextToken()
+	}
+
+	return program 
+}
+
 func (p *Parser) parseExpression(precedence int) ast.Expression {
+	p.addTrace("parseExpression("+sc.Itoa(precedence)+")'"+p.curToken.Literal+"'")
 	var leftExp ast.Expression
 	switch p.curToken.Cat {
 	case tk.NAME:
@@ -61,8 +78,13 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 				p.parsingErrAt("parseExpression() 3")
 				return nil
 		}
+	case tk.CLOSE_DELIMITER, tk.EOF:
+		msg := fmt.Sprintf("unexpected end of expression @ line %d", p.l.GetRow())
+		p.errors = append(p.errors, msg)
+		return nil
 	default:
-		p.parsingErrAt("parseExpression() 4")
+		msg := fmt.Sprintf("unexpected expression @ line %d", p.l.GetRow())
+		p.errors = append(p.errors, msg)
 		return nil
 	}
 
@@ -76,23 +98,20 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		leftExp = p.parseInfix(leftExp)
 	}
 	// input handling
-	if !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) {
+	if !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && p.peekToken.Cat != tk.CLOSE_DELIMITER {
 		leftExp = p.parseInput(leftExp)
-	}
-	
-	if !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) {
-		p.parsingErrAt("parseExpression() 5")
-		return nil
 	}
 	return leftExp
 }
 
 func (p *Parser) parseName() *ast.Name {
+	p.addTrace("parseName()'"+p.curToken.Literal+"'")
 	return &ast.Name{Token: p.curToken, Value: p.curToken.Literal}
 }
 
 
 func (p *Parser) parseCard() *ast.Card {
+	p.addTrace("parseCard()")
 	card := &ast.Card{Token: p.curToken}
 
 	if !p.peekTokenIs(tk.GT) {
@@ -118,13 +137,13 @@ func (p *Parser) parseCard() *ast.Card {
 				card.Body = p.parseExpression(LOWEST)
 			}
 		}
-		p.nextToken()
 	}
-
+	p.nextToken()
 	return card
 }
 
 func (p *Parser) parseGroup() *ast.Group {
+	p.addTrace("parseGroup()'"+p.curToken.Literal+"'")
 	group := &ast.Group{Token: p.curToken}
 	group.Expressions = []ast.Expression{}
 	gType := p.curToken.Type
@@ -149,15 +168,14 @@ func (p *Parser) parseGroup() *ast.Group {
 				group.Expressions = append(group.Expressions, exp)
 			}
 			if p.peekToken.Type != tk.RPAREN && p.peekToken.Type != tk.EOL {
-				msg := fmt.Sprintf("expected next token to be EOL or RPAREN, got %s instead", p.peekToken.Type.ToStr())
-				p.errors = append(p.errors, msg)
+				p.errors = append(p.errors, "unexpected end of group")
 				return nil
 			} else {
 				p.nextToken()
 			}
-		}		
+		}
 	} else {
-		switch p.curToken.Type {
+		switch gType {
 		case tk.LSQUAR:
 			endTok = tk.RSQUAR
 		case tk.LCURLY, tk.SCURLY:
@@ -180,6 +198,7 @@ func (p *Parser) parseGroup() *ast.Group {
 }
 
 func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
+	p.addTrace("parseInfix()'"+p.curToken.Literal+"'")
 	expression := &ast.Infix{
 		Token: p.curToken,
 		Operator: p.curToken.Literal,
@@ -193,6 +212,7 @@ func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
 }
 
 func (p *Parser) parseInput(left ast.Expression) ast.Expression {
+	p.addTrace("parseInput()'"+p.curToken.Literal+"'")
 	expression := &ast.Input{
 		Left: left,
 	}
