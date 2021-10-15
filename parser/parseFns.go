@@ -32,7 +32,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 			p.nextToken()
 			leftExp = p.parseExpression(LOWEST)
 			if !p.expectPeek(tk.RPAREN) {
-				p.parsingErrAt("parseExpression()")
+				p.parsingErrAt("parseExpression() 1")
 				return nil
 			}	
 		} else {
@@ -42,7 +42,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		if p.curToken.Type == tk.LT {
 			leftExp = p.parseCard()
 		} else {
-			p.parsingErrAt("parseExpression()")
+			p.parsingErrAt("parseExpression() 2")
 			return nil
 		}
 	case tk.PRIMITIVE:
@@ -58,16 +58,16 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 			case tk.BYTES:
 				leftExp = p.parseBytes()
 			default:
-				p.parsingErrAt("parseExpression()")
+				p.parsingErrAt("parseExpression() 3")
 				return nil
 		}
 	default:
-		p.parsingErrAt("parseExpression()")
+		p.parsingErrAt("parseExpression() 4")
 		return nil
 	}
 
 	// infix handling
-	for !p.peekTokenIs(tk.EOL) && precedence < p.peekPrecedence() {
+	for !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && precedence < p.peekPrecedence() {
 		if _, ok := precedences[p.peekToken.Type]; !ok {
 			return leftExp
 		}
@@ -76,12 +76,12 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		leftExp = p.parseInfix(leftExp)
 	}
 	// input handling
-	if !p.peekTokenIs(tk.EOL) {
+	if !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) {
 		leftExp = p.parseInput(leftExp)
 	}
 	
-	if !p.peekTokenIs(tk.EOL) {
-		p.parsingErrAt("parseExpression()")
+	if !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) {
+		p.parsingErrAt("parseExpression() 5")
 		return nil
 	}
 	return leftExp
@@ -163,7 +163,7 @@ func (p *Parser) parseGroup() *ast.Group {
 		case tk.LCURLY, tk.SCURLY:
 			endTok = tk.RCURLY
 		default:
-			p.parsingErrAt("parseExpression()")
+			p.parsingErrAt("parseGroup()")
 			return nil
 		}
 		// loop to eval expressions until group close delimiter
