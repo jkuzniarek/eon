@@ -4,6 +4,7 @@ import (
 	"eon/ast"
 	"strconv"
 	"fmt"
+	ssDec "github.com/shopspring/decimal"
 )
 
 
@@ -33,7 +34,7 @@ func (p *Parser) parseUInt() ast.Expression {
 
 func (p *Parser) parseDec() ast.Expression {
 	lit := &ast.Dec{Token: p.curToken}
-	value, err := decimal.NewFromString(p.curToken.Literal)
+	value, err := ssDec.NewFromString(p.curToken.Literal)
 	if err != nil {
 		msg := fmt.Sprintf("could not parse %q as decimal", p.curToken.Literal)
 		p.errors = append(p.errors, msg)
@@ -60,11 +61,11 @@ func (p *Parser) parseStr() ast.Expression {
 			position++
 			strEnd++
 		}
-		value = append(value, src[strStart:strEnd])
+		value += src[strStart:strEnd]
 		if position == (srcLen-1) {
 			another = false
 		} else if position < (srcLen-1) && src[position+1] == ch {
-			value = append(value, string(ch))
+			value += string(ch)
 			position = position + 2
 		}
 	}
@@ -75,6 +76,7 @@ func (p *Parser) parseStr() ast.Expression {
 func (p *Parser) parseBytes() ast.Expression {
 lit := &ast.Byt{Token: p.curToken}
 src := p.curToken.Literal
+var value []byte
 ch := src[1]
 position := 2
 count := 0
@@ -92,10 +94,7 @@ case 'x':
 			position++
 		}
 	}
-	if count == 0 {
-		return [...]byte{}
-	}
-	value := [count]byte 
+	value := make([]byte, count) 
 	count = 0
 	position = 2
 	for src[position] != '\\' {
@@ -110,23 +109,23 @@ case 'x':
 case 'd':
 	i := 0
 	for src[position] != '\\' {
-		if isDecChar(src[position]){
+		if isIntChar(src[position]){
 			for i < 3 {
 				// ensure digit range only encompasses digits of ints between 000-255
-				if i == 0 && (48 <= src[position] <= 50){
+				if i == 0 && 48 <= src[position] && src[position] <= 50 {
 					i++
 					position++
 				} else if (
 					i == 1 && 
-					(48 <= src[position-1] <= 49 || 
-						(src[position-1] == 50 && (48 <= src[position] <= 53)))){
+					((48 <= src[position-1] && src[position-1] <= 49) || 
+						(src[position-1] == 50 && 48 <= src[position] && src[position] <= 53))){
 					i++
 					position++
 				} else if (
 					i == 2 && 
-					(48 <= src[position-2] <= 49 || 
-						(src[position-2] == 50 && (48 <= src[position-1] <= 52 ||
-							(src[position-1] == 53 && (48 <= src[position] <= 53)) )))){
+					((48 <= src[position-2] && src[position-2] <= 49) || 
+						(src[position-2] == 50 && ((48 <= src[position-1] && src[position-1] <= 52) ||
+							(src[position-1] == 53 && 48 <= src[position] && src[position] <= 53) )))){
 					i++
 					position++
 				} else {
@@ -141,14 +140,11 @@ case 'd':
 			position++
 		}
 	}
-	if count == 0 {
-		return [...]byte{}
-	}
-	value := [count]byte 
+	value := make([]byte, count)
 	count = 0
 	position = 2
 	for src[position] != '\\' {
-		if isDecChar(src[position]){
+		if isIntChar(src[position]){
 			value[count] = decToByte(src[position:(position+3)])
 			count++
 			position = position + 3
@@ -178,10 +174,7 @@ case 'b':
 			position++
 		}
 	}
-	if count == 0 {
-		return [...]byte{}
-	}
-	value := [count]byte 
+	value := make([]byte, count)
 	count = 0
 	position = 2
 	for src[position] != '\\' {
