@@ -42,7 +42,7 @@ func (p *Parser) expectPeek(t tk.TokenType) bool{
 }
 
 func (p *Parser) parsingErrAt(location string) {
-	msg := fmt.Sprintf("could not parse %d in %s @ line %d, col %d", p.curToken.Type, location, p.l.getRow(), p.l.getCol())
+	msg := fmt.Sprintf("could not parse %d in %s @ line %d, col %d", p.curToken.Type, location, p.l.GetRow(), p.l.GetCol())
 	p.errors = append(p.errors, msg)
 }
 
