@@ -239,7 +239,7 @@ func (l *Lexer) readCommentLine() string{
 	l.readChar()
 	l.readChar()
 	position := l.position
-	for l.ch != '\n' {
+	for l.ch != '\n' && l.ch != 0 {
 		l.readChar()
 	}
 	return l.input[position:l.position]
@@ -249,10 +249,12 @@ func (l *Lexer) readCommentMultiline() string{
 	l.readChar()
 	l.readChar()
 	position := l.position
-	for !(l.ch == '*' && l.peekChar() == '/'){
+	for !((l.ch == '*' && l.peekChar() == '/') || l.ch == 0) {
 		l.readChar()
 	}
-	l.readChar()
+	if l.ch != 0 {
+		l.readChar()
+	}
 	return l.input[position:l.position-1]
 }
 

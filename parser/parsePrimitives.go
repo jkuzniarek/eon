@@ -201,10 +201,9 @@ func (p *Parser) parseComment() ast.Expression {
 		srcLen := len(src)
 		if src[1] == '*' {
 			lit.Multiline = true
-			lit.Value = src[2:(srcLen-2)]
 		}else{
 			lit.Multiline = false
-			lit.Value = src[2:(srcLen-1)]
 		}
+		lit.Value = src[2:srcLen]
 		return lit
 	}
