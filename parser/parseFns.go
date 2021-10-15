@@ -128,6 +128,8 @@ func (p *Parser) parseGroup() *ast.Group {
 	group := &ast.Group{Token: p.curToken}
 	group.Expressions = []ast.Expression{}
 	gType := p.curToken.Type
+	var exp ast.Expression
+	var endTok tk.TokenType
 	p.nextToken()
 	
 	if gType == tk.HPAREN || gType == tk.CPAREN {
@@ -140,24 +142,22 @@ func (p *Parser) parseGroup() *ast.Group {
 			} else if p.curToken.Type == tk.COMMENT {
 				exp := p.parseComment()
 			} else {
-				exp := p.parseExpression()
+				exp := p.parseExpression(LOWEST)
 			}
 			// append exp to expression list
-			if(exp != nil){
+			if exp != nil {
 				group.Expressions = append(group.Expressions, exp)
 			}
-			if p.peekToken.TokenType != tk.RPAREN && p.peekToken.TokenType != tk.EOL {
+			if p.peekToken.Type != tk.RPAREN && p.peekToken.Type != tk.EOL {
 				msg := fmt.Sprintf("expected next token to be EOL or RPAREN, got %s instead", p.peekToken.Type.ToStr())
 				p.errors = append(p.errors, msg)
 				return nil
 			} else {
 				p.nextToken()
 			}
-		}
-		return group
-		
+		}		
 	} else {
-		switch p.curToken.TokenType {
+		switch p.curToken.Type {
 		case tk.LSQUAR:
 			endTok := tk.RSQUAR
 		case tk.LCURLY, tk.SCURLY:
@@ -168,15 +168,15 @@ func (p *Parser) parseGroup() *ast.Group {
 		}
 		// loop to eval expressions until group close delimiter
 		for !p.curTokenIs(endTok) {
-			exp := p.parseExpression()
+			exp := p.parseExpression(LOWEST)
 			// append exp to expression list
 			if(exp != nil){
 				group.Expressions = append(group.Expressions, exp)
 			}
 			p.nextToken()
-			return group
 		}
 	}
+	return group
 }
 
 func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
