@@ -23,14 +23,14 @@ func (p *Parser) ParseProgram() *ast.Program {
 }
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {
-	accessorStart := false
+	var leftExp ast.Expression
 	switch p.curToken.Cat {
 	case tk.NAME:
-		leftExpr := p.parseName()
+		leftExp := p.parseName()
 	case tk.OPEN_DELIMITER:
 		if p.curToken.Type == tk.LPAREN {
 			p.nextToken()
-			leftExpr := p.parseExpression(LOWEST)
+			leftExp := p.parseExpression(LOWEST)
 			if !p.expectPeek(tk.RPAREN) {
 				p.parsingErrAt("parseExpression()")
 				return nil
@@ -47,16 +47,16 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		}
 	case tk.PRIMITIVE:
 		switch p.curToken.Type {
-			case SINT: 
-				leftExp := parseSInt()
-			case UINT:
-				leftExp := parseUInt()
-			case DEC:
-				leftExp := parseDec()
-			case STR:
-				leftExp := parseStr()
-			case BYTES:
-				leftExp := parseBytes()
+			case tk.SINT: 
+				leftExp := p.parseSInt()
+			case tk.UINT:
+				leftExp := p.parseUInt()
+			case tk.DEC:
+				leftExp := p.parseDec()
+			case tk.STR:
+				leftExp := p.parseStr()
+			case tk.BYTES:
+				leftExp := p.parseBytes()
 			default:
 				p.parsingErrAt("parseExpression()")
 				return nil
@@ -99,23 +99,23 @@ func (p *Parser) parseCard() *ast.Card {
 		card.Index = []ast.Expression{}
 		if p.peekTokenIs(tk.TYPE){
 			p.nextToken()
-			card.Type = p.curToken
+			card.Type = p.curToken.Literal
 			if p.peekTokenIs(tk.BSLASH) {
 				p.nextToken()
 				p.nextToken()
-				card.Size = p.parseExpression()
+				card.Size = p.parseExpression(LOWEST)
 			}
 		}
 
 		for !p.peekTokenIs(tk.GT){
 			p.nextToken()
 			if p.curToken.Cat == tk.NAME {
-				exp := p.parseExpression()
+				exp := p.parseExpression(LOWEST)
 				card.Index = append(card.Index, exp)
 				p.nextToken()
 			} else if p.curTokenIs(tk.SLASH){
 				p.nextToken()
-				card.Body = p.parseExpression()
+				card.Body = p.parseExpression(LOWEST)
 			}
 		}
 		p.nextToken()
@@ -127,17 +127,17 @@ func (p *Parser) parseCard() *ast.Card {
 func (p *Parser) parseGroup() *ast.Group {
 	group := &ast.Group{Token: p.curToken}
 	group.Expressions = []ast.Expression{}
-	gType := p.curToken.TokenType
+	gType := p.curToken.Type
 	p.nextToken()
 	
 	if gType == tk.HPAREN || gType == tk.CPAREN {
 		// loop to eval expressions until RPAREN
 		for !p.curTokenIs(tk.RPAREN) {
 			// retain comments here only. they will be stripped during conversion to a function
-			if p.curToken.TokenType == tk.EOL {
+			if p.curToken.Type == tk.EOL {
 				p.nextToken()
 				continue
-			} else if p.curToken.TokenType == tk.COMMENT {
+			} else if p.curToken.Type == tk.COMMENT {
 				exp := p.parseComment()
 			} else {
 				exp := p.parseExpression()
