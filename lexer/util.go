@@ -36,3 +36,11 @@ func isOpChar(ch byte) bool {
 		return false
 	}
 }
+
+func (l *Lexer) getRow() int {
+	return l.row
+}
+
+func (l *Lexer) getCol() int {
+	return l.col
+}
