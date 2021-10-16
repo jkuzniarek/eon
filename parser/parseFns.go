@@ -39,7 +39,7 @@ func (p *Parser) ParseShell() *ast.Program {
 }
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {
-	p.addTrace("parseExpression("+sc.Itoa(precedence)+")'"+p.curToken.Literal+"'")
+	p.addTrace("START parseExpression("+sc.Itoa(precedence)+")'"+p.curToken.Literal+"'")
 	var leftExp ast.Expression
 	switch p.curToken.Cat {
 	case tk.NAME:
@@ -47,18 +47,20 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	case tk.OPEN_DELIMITER:
 		if p.curToken.Type == tk.LPAREN {
 			p.nextToken()
-			if p.closeCard {
-				p.closeCard = false
+			if p.inCard {
+				p.inCard = false
 				leftExp = p.parseExpression(LOWEST)
-				p.closeCard = true
+				p.inCard = true
 				if !p.expectPeek(tk.RPAREN) {
 					p.parsingErrAt("parseExpression() 1")
+					p.addTrace("END parse return nil")
 					return nil
 				}	
 			}else{
 				leftExp = p.parseExpression(LOWEST)
 				if !p.expectPeek(tk.RPAREN) {
 					p.parsingErrAt("parseExpression() 1")
+					p.addTrace("END parse return nil")
 					return nil
 				}	
 			}
@@ -70,6 +72,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 			leftExp = p.parseCard()
 		} else {
 			p.parsingErrAt("parseExpression() 2")
+			p.addTrace("END parse return nil")
 			return nil
 		}
 	case tk.PRIMITIVE:
@@ -86,21 +89,25 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 				leftExp = p.parseBytes()
 			default:
 				p.parsingErrAt("parseExpression() 3")
+				p.addTrace("END parse return nil")
 				return nil
 		}
 	case tk.CLOSE_DELIMITER, tk.EOF:
 		msg := fmt.Sprintf("unexpected end of expression @ line %d", p.l.GetRow())
 		p.errors = append(p.errors, msg)
+		p.addTrace("END parse return nil")
 		return nil
 	default:
 		msg := fmt.Sprintf("unexpected expression @ line %d", p.l.GetRow())
 		p.errors = append(p.errors, msg)
+		p.addTrace("END parse return nil")
 		return nil
 	}
 
 	// infix handling
-	for !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && !(p.closeCard && p.peekTokenIs(tk.GT)) && precedence < p.peekPrecedence() {
+	for !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && !(p.inCard && (p.peekTokenIs(tk.GT) || p.peekTokenIs(tk.SLASH))) && precedence < p.peekPrecedence() {
 		if _, ok := precedences[p.peekToken.Type]; !ok {
+			p.addTrace("END parseExpression()")
 			return leftExp
 		}
 
@@ -108,9 +115,10 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		leftExp = p.parseInfix(leftExp)
 	}
 	// input handling
-	if !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && p.peekToken.Cat != tk.CLOSE_DELIMITER && !(p.closeCard && p.peekTokenIs(tk.GT)) {
+	if !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && p.peekToken.Cat != tk.CLOSE_DELIMITER && !(p.inCard && (p.peekTokenIs(tk.GT) || p.peekTokenIs(tk.SLASH))) {
 		leftExp = p.parseInput(leftExp)
 	}
+	p.addTrace("END parseExpression()")
 	return leftExp
 }
 
@@ -121,8 +129,8 @@ func (p *Parser) parseName() *ast.Name {
 
 
 func (p *Parser) parseCard() *ast.Card {
-	p.addTrace("parseCard()")
-	p.closeCard = true
+	p.addTrace("START parseCard()")
+	p.inCard = true
 	card := &ast.Card{Token: p.curToken}
 
 	if !p.peekTokenIs(tk.GT) {
@@ -143,7 +151,9 @@ func (p *Parser) parseCard() *ast.Card {
 		for !p.curTokenIs(tk.GT) && !p.curTokenIs(tk.SLASH) && p.curToken.Cat == tk.NAME {
 			exp = p.parseExpression(LOWEST)
 			card.Index = append(card.Index, exp)
+			p.addTrace("__index expression last token: "+p.curToken.Literal)
 			p.nextToken()
+			p.addTrace("__index expression next token: "+p.curToken.Literal)
 		}
 
 		// parse body
@@ -151,13 +161,20 @@ func (p *Parser) parseCard() *ast.Card {
 			p.nextToken()
 			card.Body = p.parseExpression(LOWEST)
 		}
+		// end card
+		if !p.expectPeek(tk.GT) {
+			p.parsingErrAt("parseCard()")
+			p.addTrace("END parse return nil")
+			return nil
+		}	
 	}
-	p.closeCard = false
+	p.inCard = false
+	p.addTrace("END parseCard()")
 	return card
 }
 
 func (p *Parser) parseGroup() *ast.Group {
-	p.addTrace("parseGroup()'"+p.curToken.Literal+"'")
+	p.addTrace("START parseGroup()'"+p.curToken.Literal+"'")
 	group := &ast.Group{Token: p.curToken}
 	group.Expressions = []ast.Expression{}
 	gType := p.curToken.Type
@@ -183,6 +200,7 @@ func (p *Parser) parseGroup() *ast.Group {
 			}
 			if p.peekToken.Type != tk.RPAREN && p.peekToken.Type != tk.EOL {
 				p.errors = append(p.errors, "unexpected end of group")
+				p.addTrace("END parse return nil")
 				return nil
 			} else {
 				p.nextToken()
@@ -196,6 +214,7 @@ func (p *Parser) parseGroup() *ast.Group {
 			endTok = tk.RCURLY
 		default:
 			p.parsingErrAt("parseGroup()")
+			p.addTrace("END parse return nil")
 			return nil
 		}
 		// loop to eval expressions until group close delimiter
@@ -208,11 +227,12 @@ func (p *Parser) parseGroup() *ast.Group {
 			p.nextToken()
 		}
 	}
+	p.addTrace("END parseGroup()")
 	return group
 }
 
 func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
-	p.addTrace("parseInfix()'"+p.curToken.Literal+"'")
+	p.addTrace("START parseInfix()'"+p.curToken.Literal+"'")
 	expression := &ast.Infix{
 		Token: p.curToken,
 		Operator: p.curToken.Literal,
@@ -222,6 +242,7 @@ func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
 	precedence := p.curPrecedence()
 	p.nextToken()
 	expression.Right = p.parseExpression(precedence)
+	p.addTrace("END parseInfix()")
 	return expression
 }
 
@@ -232,5 +253,6 @@ func (p *Parser) parseInput(left ast.Expression) ast.Expression {
 	}
 	p.nextToken()
 	expression.Input = p.parseExpression(LOWEST)
+	p.addTrace("END parseInput()")
 	return expression
 }
