@@ -29,6 +29,9 @@ func Start(in io.Reader, out io.Writer) {
 		if len(p.Errors()) != 0 {
 			printParserErrors(out, p.Errors(), p.Trace)
 			continue
+		}else{
+			// reset trace
+			p.Trace = ""
 		}
 
 		io.WriteString(out, program.String())
