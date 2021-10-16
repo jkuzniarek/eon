@@ -63,19 +63,25 @@ func (c *Card) String() string {
 		if iLen == 1 {
 			out.WriteString(" ")
 			out.WriteString(c.Index[0].String())
-			out.WriteString("\n")
 		}else{
-			out.WriteString("\n")
 			for _, e := range c.Index {
-				out.WriteString(e.String())
 				out.WriteString("\n")
+				out.WriteString(e.String())
 			}
+			out.WriteString("\n")
 		}
 	}
 
 	if c.Body != nil {
-		out.WriteString("/")
-		out.WriteString(c.Body.String())
+		temp := c.Body.String()
+		if iLen < 2 && len(temp) < 50 {
+			// same line
+			out.WriteString("/")
+		} else {
+			// next line
+			out.WriteString("\n/")
+		}
+		out.WriteString(temp)
 	}
 
 	out.WriteString(">")
