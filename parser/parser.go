@@ -50,6 +50,7 @@ type Parser struct {
 	shellEnv bool
 	Trace string
 	inCard bool
+	Depth int
 }
 
 func New(l *lexer.Lexer, sh bool) *Parser {
@@ -59,6 +60,7 @@ func New(l *lexer.Lexer, sh bool) *Parser {
 		errors: []string{},
 		Trace: "",
 		inCard: false,
+		Depth: 0,
 	}
 
 

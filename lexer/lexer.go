@@ -10,8 +10,10 @@ func (l *Lexer) NextToken() tk.Token{
 	switch l.ch{
 	case '/':
 		if l.peekChar() == '/' {
+			l.Depth++
 			tok = tk.Token{Cat: tk.COMMENT, Type: tk.COMMENT, Literal: l.readCommentLine()}
 		} else if l.peekChar() == '*' {
+			l.Depth++
 			tok = tk.Token{Cat: tk.COMMENT, Type: tk.COMMENT, Literal: l.readCommentMultiline()}
 		} else {
 			tok = newToken(tk.ACCESS_OPERATOR, tk.SLASH, l.ch)
@@ -95,6 +97,7 @@ func (l *Lexer) NextToken() tk.Token{
 		tok = newToken(tk.NAME, tk.DOLLAR, l.ch)
 	case '\\':
 		if l.peekChar() == 'x' || l.peekChar() == 'd' || l.peekChar() == 'b' {
+			l.Depth++
 			tok = tk.Token{Cat: tk.PRIMITIVE, Type: tk.BYTES, Literal: l.readBytes()}
 		} else {
 			tok = newToken(tk.BSLASH, tk.BSLASH, l.ch)
@@ -129,6 +132,7 @@ func (l *Lexer) NextToken() tk.Token{
 				tok.Cat = tk.ILLEGAL
 			}
 		} else if isQuote(l.ch){
+			l.Depth++
 			tok.Type = tk.STR 
 			tok.Literal = l.readString()
 			tok.Cat = tk.PRIMITIVE
@@ -168,11 +172,12 @@ type Lexer struct{
 	ch byte // current char under examination
 	row int // current line number (# of \n consumed + 1)
 	col int // current character index in line (# of ch bytes consumed + 1)
+	Depth int
 }
 
 func New(input string) *Lexer{
 	// L
-	l := &Lexer{input: input, row: 1, col: 1}
+	l := &Lexer{input: input, row: 1, col: 1, Depth: 0}
 	l.readChar()
 	return l
 }
@@ -242,6 +247,9 @@ func (l *Lexer) readCommentLine() string{
 	for l.ch != '\n' && l.ch != 0 {
 		l.readChar()
 	}
+	if l.ch != 0 {
+		l.Depth--
+	}
 	return l.input[position:l.position]
 }
 
@@ -254,6 +262,7 @@ func (l *Lexer) readCommentMultiline() string{
 	}
 	if l.ch != 0 {
 		l.readChar()
+		l.Depth--
 	}
 	return l.input[position:l.position-1]
 }
@@ -271,7 +280,7 @@ func (l *Lexer) readString() string{
 			another = false
 		}
 	}
-	
+	l.Depth--
 	return l.input[position:l.position+1]
 }
 
@@ -281,6 +290,7 @@ func (l *Lexer) readBytes() string{
 	for l.ch != '\\' {
 		l.readChar()
 	}
+	l.Depth--
 	return l.input[position:l.position+1]
 }
 

@@ -10,28 +10,50 @@ import (
 
 const PROMPT = ">_ "
 
-func Start(in io.Reader, out io.Writer) {
+func Shell(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	inputStack := "" 
+	stackDepth := 0
+	var inputLog []string
 
 	for {
-		fmt.Fprintf(out, PROMPT)
+		if inputStack == "" {
+			fmt.Fprintf(out, PROMPT)
+		} else {
+			offset := "   "
+			for stackDepth > 0 {
+				offset += " "
+				stackDepth--
+			}
+			fmt.Fprintf(out, offset)
+		}
 		scanned := scanner.Scan()
 		if !scanned {
 			return
 		}
 
-		line := "(-"+scanner.Text()+")"
+		input := scanner.Text()+"\n"
+		line := inputStack+input
+		// io.WriteString(out, line)
 		l := lexer.New(line)
 		p := parser.New(l, true)
 
 		program := p.ParseShell()
 
-		if len(p.Errors()) != 0 {
+		if l.Depth > 0 || p.Depth > 0 {
+			inputStack = inputStack + input
+			stackDepth = p.Depth
+			continue
+		}else if len(p.Errors()) != 0 {
+			inputLog = append(inputLog, inputStack+input)
+			inputStack = ""
+			stackDepth = 0
 			printParserErrors(out, p.Errors(), p.Trace)
 			continue
 		}else{
-			// reset trace
-			p.Trace = ""
+			inputLog = append(inputLog, inputStack+input)
+			inputStack = ""
+			stackDepth = 0
 		}
 
 		io.WriteString(out, program.String())

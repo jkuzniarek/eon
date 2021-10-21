@@ -8,27 +8,16 @@ import (
 )
 
 
-func (p *Parser) ParseProgram() *ast.Program {
-	program := &ast.Program{}
-	program.Expressions = []ast.Expression{}
-
-	for !p.curTokenIs(tk.EOF) {
-		expr := p.parseExpression(LOWEST)
-		if expr != nil {
-			program.Expressions = append(program.Expressions, expr)
-		}
-		p.nextToken()
-	}
-
-	return program 
-}
-
 func (p *Parser) ParseShell() *ast.Program {
 	program := &ast.Program{}
 	program.Expressions = []ast.Expression{}
 
 	for !p.curTokenIs(tk.EOF) {
-		expr := p.parseGroup()
+		if p.curTokenIs(tk.EOL){
+			p.nextToken()
+			continue
+		}
+		expr := p.parseExpression(LOWEST)
 		if expr != nil {
 			program.Expressions = append(program.Expressions, expr)
 		}
@@ -46,6 +35,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		leftExp = p.parseName()
 	case tk.OPEN_DELIMITER:
 		if p.curToken.Type == tk.LPAREN {
+			p.Depth++
 			p.nextToken()
 			if p.inCard {
 				p.inCard = false
@@ -64,6 +54,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 					return nil
 				}	
 			}
+			p.Depth--
 		} else {
 			leftExp = p.parseGroup()
 		}
@@ -130,10 +121,12 @@ func (p *Parser) parseName() *ast.Name {
 
 func (p *Parser) parseCard() *ast.Card {
 	p.addTrace("START parseCard()")
-	p.inCard = true
+	
 	card := &ast.Card{Token: p.curToken}
 
 	if !p.peekTokenIs(tk.GT) {
+		p.inCard = true
+		p.Depth++
 		card.Index = []ast.Expression{}
 		p.nextToken()
 		// parse type
@@ -167,29 +160,34 @@ func (p *Parser) parseCard() *ast.Card {
 			p.addTrace("END parse return nil")
 			return nil
 		}	
+		p.Depth--
+		p.inCard = false
+	}else{
+		p.nextToken()
 	}
-	p.inCard = false
+	
 	p.addTrace("END parseCard()")
 	return card
 }
 
 func (p *Parser) parseGroup() *ast.Group {
 	p.addTrace("START parseGroup()'"+p.curToken.Literal+"'")
+	p.Depth++
 	group := &ast.Group{Token: p.curToken}
 	group.Expressions = []ast.Expression{}
 	gType := p.curToken.Type
 	var exp ast.Expression
 	var endTok tk.TokenType
-	p.nextToken()
 	
 	if gType == tk.HPAREN || gType == tk.CPAREN {
 		// loop to eval expressions until RPAREN
-		for !p.curTokenIs(tk.RPAREN) {
+		for !p.peekTokenIs(tk.RPAREN) {
+			p.nextToken()
 			// retain comments here only. they will be stripped during conversion to a function
 			if p.curToken.Type == tk.EOL {
-				p.nextToken()
 				continue
-			} else if p.curToken.Type == tk.COMMENT {
+			}
+			if p.curToken.Type == tk.COMMENT {
 				exp = p.parseComment()
 			} else {
 				exp = p.parseExpression(LOWEST)
@@ -198,12 +196,10 @@ func (p *Parser) parseGroup() *ast.Group {
 			if exp != nil {
 				group.Expressions = append(group.Expressions, exp)
 			}
-			if p.peekToken.Type != tk.RPAREN && p.peekToken.Type != tk.EOL {
+			if !p.peekTokenIs(tk.RPAREN) && !p.peekTokenIs(tk.EOL) {
 				p.errors = append(p.errors, "unexpected end of group")
 				p.addTrace("END parse return nil")
 				return nil
-			} else {
-				p.nextToken()
 			}
 		}
 	} else {
@@ -218,15 +214,25 @@ func (p *Parser) parseGroup() *ast.Group {
 			return nil
 		}
 		// loop to eval expressions until group close delimiter
-		for !p.curTokenIs(endTok) {
+		for !p.peekTokenIs(endTok) && !p.peekTokenIs(tk.EOF) {
+			p.nextToken()
+			if p.curTokenIs(tk.EOL){
+				continue
+			}
 			exp = p.parseExpression(LOWEST)
 			// append exp to expression list
-			if(exp != nil){
+			if exp != nil {
 				group.Expressions = append(group.Expressions, exp)
 			}
-			p.nextToken()
+		}
+		if !p.peekTokenIs(endTok){
+			p.errors = append(p.errors, "unexpected end of group")
+			p.addTrace("END parse return nil")
+			return nil
 		}
 	}
+	p.nextToken()
+	p.Depth--
 	p.addTrace("END parseGroup()")
 	return group
 }

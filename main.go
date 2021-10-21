@@ -9,7 +9,7 @@ import (
 func main() {
 	if(len(os.Args) == 1){
 		fmt.Printf("Welcome to the eon Shell\n")
-		repl.Start(os.Stdin, os.Stdout)
+		repl.Shell(os.Stdin, os.Stdout)
 	}
 	// else if(os.Args[1] == "bild"){
 	// 	// compile
