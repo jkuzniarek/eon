@@ -22,7 +22,7 @@ func Shell(in io.Reader, out io.Writer) {
 		} else {
 			offset := "   "
 			for stackDepth > 0 {
-				offset += " "
+				offset += "  "
 				stackDepth--
 			}
 			fmt.Fprintf(out, offset)

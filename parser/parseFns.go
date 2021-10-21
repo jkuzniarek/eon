@@ -29,6 +29,9 @@ func (p *Parser) ParseShell() *ast.Program {
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {
 	p.addTrace("START parseExpression("+sc.Itoa(precedence)+")'"+p.curToken.Literal+"'")
+	for p.curTokenIs(tk.EOL){
+		p.nextToken()
+	}
 	var leftExp ast.Expression
 	switch p.curToken.Cat {
 	case tk.NAME:
@@ -107,6 +110,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	}
 	// input handling
 	if !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && p.peekToken.Cat != tk.CLOSE_DELIMITER && !(p.inCard && (p.peekTokenIs(tk.GT) || p.peekTokenIs(tk.SLASH))) {
+		p.nextToken()
 		leftExp = p.parseInput(leftExp)
 	}
 	p.addTrace("END parseExpression()")
@@ -153,9 +157,14 @@ func (p *Parser) parseCard() *ast.Card {
 		if p.curTokenIs(tk.SLASH) {
 			p.nextToken()
 			card.Body = p.parseExpression(LOWEST)
+			p.nextToken()
 		}
+		
 		// end card
-		if !p.expectPeek(tk.GT) {
+		for p.curTokenIs(tk.EOL){
+			p.nextToken()
+		}
+		if !p.curTokenIs(tk.GT) {
 			p.parsingErrAt("parseCard()")
 			p.addTrace("END parse return nil")
 			return nil
