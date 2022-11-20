@@ -1,4 +1,4 @@
-package evaluator
+package eval
 
 // this wont work since it's incomplete and uses stuff that ive removed
 

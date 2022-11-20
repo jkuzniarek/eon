@@ -12,14 +12,9 @@ type Node interface {
 	String() string
 }
 
-type Expression interface {
-	Node 
-	expressionNode()
-}
-
 // eventually rename to Root
 type Program struct {
-	Expressions []Expression 
+	Expressions []Node 
 }
 func (p *Program) TokenLiteral() string {
 	if len(p.Expressions) > 0 {
@@ -41,13 +36,11 @@ func (p *Program) String() string{
 type Card struct{
 	Token tk.Token // the open delimiter token
 	Type string // the type literal
-	Size Expression // the array size specifier
-	Index []Expression // name and infix assign expressions
-	Body Expression // card body expression
+	Index []Node // name and infix assign expressions
+	Body Node // card body expression
 }
 // TODO: change to include body as part of index with key '/'
 
-func (c *Card) expressionNode(){}
 func (c *Card) TokenLiteral() string {
 	return c.Token.Literal
 }
@@ -91,11 +84,10 @@ func (c *Card) String() string {
 }
 
 type Input struct {
-	Left Expression
-	Input Expression
+	Left Node
+	Input Node
 }
 
-func (i *Input) expressionNode(){}
 func (i *Input) TokenLiteral() string {
 	return i.Left.TokenLiteral()
 }
@@ -111,12 +103,11 @@ func (i *Input) String() string {
 
 type Infix struct {
 	Token tk.Token // the operator token, eg +
-	Left Expression
+	Left Node
 	Operator string
-	Right Expression
+	Right Node
 }
 
-func (ie *Infix) expressionNode(){}
 func (ie *Infix) TokenLiteral() string {
 	return ie.Token.Literal
 }
@@ -125,7 +116,13 @@ func (ie *Infix) String() string {
 
 	// out.WriteString("(")
 	out.WriteString(ie.Left.String())
-	out.WriteString(ie.Operator + " ")
+	if ie.Token.Type == tk.ACCESS_OPERATOR {
+		out.WriteString(ie.Operator)
+	}else	if ie.Token.Type == tk.ASSIGN_OPERATOR {
+		out.WriteString(ie.Operator + " ")
+	}else {
+		out.WriteString(" " + ie.Operator + " ")
+	}
 	out.WriteString(ie.Right.String())
 	// out.WriteString(")")
 
@@ -134,10 +131,9 @@ func (ie *Infix) String() string {
 
 type Group struct{
 	Token tk.Token // the open delimiter token
-	Expressions []Expression 
+	Expressions []Node 
 }
 
-func (g *Group) expressionNode(){}
 func (g *Group) TokenLiteral() string {
 	return g.Token.Literal
 }
@@ -166,6 +162,8 @@ func (g *Group) String() string {
 		out.WriteString("]")
 	case tk.LCURLY, tk.SCURLY:
 		out.WriteString("}")
+	default:
+		out.WriteString(" ")
 	}
 	return out.String()
 }
@@ -174,7 +172,6 @@ type Name struct {
 	Token tk.Token // usually the tk.NAME token
 	Value string
 }
-func (i *Name) expressionNode() {}
 func (i *Name) TokenLiteral() string {
 	return i.Token.Literal 
 }
@@ -188,7 +185,6 @@ type UInt struct{
 	Value uint
 }
 
-func (il *UInt) expressionNode() {}
 func (il *UInt) TokenLiteral() string {
 	return il.Token.Literal
 }
@@ -202,7 +198,6 @@ type SInt struct{
 	Value int
 }
 
-func (il *SInt) expressionNode() {}
 func (il *SInt) TokenLiteral() string {
 	return il.Token.Literal
 }
@@ -216,7 +211,6 @@ type Dec struct{
 	Value ssDec.Decimal
 }
 
-func (il *Dec) expressionNode() {}
 func (il *Dec) TokenLiteral() string {
 	return il.Token.Literal
 }
@@ -230,7 +224,6 @@ type Str struct{
 	Value string
 }
 
-func (il *Str) expressionNode() {}
 func (il *Str) TokenLiteral() string {
 	return il.Token.Literal
 }
@@ -244,7 +237,6 @@ type Byt struct{
 	Value []byte
 }
 
-func (il *Byt) expressionNode() {}
 func (il *Byt) TokenLiteral() string {
 	return il.Token.Literal
 }
@@ -259,7 +251,6 @@ type Comment struct{
 	Multiline bool
 }
 
-func (n *Comment) expressionNode() {}
 func (n *Comment) TokenLiteral() string {
 	return n.Token.Literal
 }

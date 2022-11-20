@@ -8,7 +8,7 @@ import (
 )
 
 
-func (p *Parser) parseSInt() ast.Expression {
+func (p *Parser) parseSInt() ast.Node {
 	lit := &ast.SInt{Token: p.curToken}
 	value, err := strconv.ParseInt(p.curToken.Literal, 10, 0)
 	if err != nil {
@@ -20,7 +20,7 @@ func (p *Parser) parseSInt() ast.Expression {
 	return lit
 }
 
-func (p *Parser) parseUInt() ast.Expression {
+func (p *Parser) parseUInt() ast.Node {
 	lit := &ast.UInt{Token: p.curToken}
 	value, err := strconv.ParseUint(p.curToken.Literal, 10, 0)
 	if err != nil {
@@ -32,7 +32,7 @@ func (p *Parser) parseUInt() ast.Expression {
 	return lit
 }
 
-func (p *Parser) parseDec() ast.Expression {
+func (p *Parser) parseDec() ast.Node {
 	lit := &ast.Dec{Token: p.curToken}
 	value, err := ssDec.NewFromString(p.curToken.Literal)
 	if err != nil {
@@ -44,7 +44,7 @@ func (p *Parser) parseDec() ast.Expression {
 	return lit
 }
 
-func (p *Parser) parseStr() ast.Expression {
+func (p *Parser) parseStr() ast.Node {
 	lit := &ast.Str{Token: p.curToken}
 	src := p.curToken.Literal
 	srcLen := len(src)
@@ -73,7 +73,7 @@ func (p *Parser) parseStr() ast.Expression {
 	return lit
 }
 
-func (p *Parser) parseBytes() ast.Expression {
+func (p *Parser) parseBytes() ast.Node {
 lit := &ast.Byt{Token: p.curToken}
 src := p.curToken.Literal
 var value []byte
@@ -195,7 +195,7 @@ lit.Value = value
 return lit
 }
 
-func (p *Parser) parseComment() ast.Expression {
+func (p *Parser) parseComment() ast.Node {
 		lit := &ast.Comment{Token: p.curToken}
 		src := p.curToken.Literal
 		srcLen := len(src)

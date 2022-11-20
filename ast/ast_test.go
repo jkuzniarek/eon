@@ -7,7 +7,7 @@ import (
 
 func TestString(t *testing.T){
 	program := &Program{
-		Expressions: []Expression{
+		Expressions: []Node{
 			&AssignmentExpr{
 				Token: token.Token{ Type: token.SET_VAL, Literal: ":"},
 				Name: &Identifier{

@@ -10,7 +10,7 @@ import (
 
 func (p *Parser) ParseShell() *ast.Program {
 	program := &ast.Program{}
-	program.Expressions = []ast.Expression{}
+	program.Expressions = []ast.Node{}
 
 	for !p.curTokenIs(tk.EOF) {
 		if p.curTokenIs(tk.EOL){
@@ -27,12 +27,12 @@ func (p *Parser) ParseShell() *ast.Program {
 	return program 
 }
 
-func (p *Parser) parseExpression(precedence int) ast.Expression {
+func (p *Parser) parseExpression(precedence int) ast.Node {
 	p.addTrace("START parseExpression("+sc.Itoa(precedence)+")'"+p.curToken.Literal+"'")
 	for p.curTokenIs(tk.EOL){
 		p.nextToken()
 	}
-	var leftExp ast.Expression
+	var leftExp ast.Node
 	switch p.curToken.Cat {
 	case tk.NAME:
 		leftExp = p.parseName()
@@ -128,10 +128,10 @@ func (p *Parser) parseCard() *ast.Card {
 	}else {
 		p.inCard = true
 		p.Depth++
-		card.Index = []ast.Expression{}
+		card.Index = []ast.Node{}
 		p.nextToken()
 
-		var exp ast.Expression
+		var exp ast.Node
 		// parse index
 		for !p.curTokenIs(tk.RCURLY) && p.curToken.Cat == tk.NAME && p.curToken.Literal != "/" {
 			exp = p.parseExpression(LOWEST)
@@ -169,9 +169,9 @@ func (p *Parser) parseGroup() *ast.Group {
 	p.addTrace("START parseGroup()'"+p.curToken.Literal+"'")
 	p.Depth++
 	group := &ast.Group{Token: p.curToken}
-	group.Expressions = []ast.Expression{}
+	group.Expressions = []ast.Node{}
 	gType := p.curToken.Type
-	var exp ast.Expression
+	var exp ast.Node
 	var endTok tk.TokenType
 	
 	if gType == tk.HPAREN || gType == tk.CPAREN {
@@ -232,7 +232,7 @@ func (p *Parser) parseGroup() *ast.Group {
 	return group
 }
 
-func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
+func (p *Parser) parseInfix(left ast.Node) ast.Node {
 	p.addTrace("START parseInfix()'"+p.curToken.Literal+"'")
 	expression := &ast.Infix{
 		Token: p.curToken,
@@ -247,7 +247,7 @@ func (p *Parser) parseInfix(left ast.Expression) ast.Expression {
 	return expression
 }
 
-func (p *Parser) parseInput(left ast.Expression) ast.Expression {
+func (p *Parser) parseInput(left ast.Node) ast.Node {
 	p.addTrace("parseInput()'"+p.curToken.Literal+"'")
 	expression := &ast.Input{
 		Left: left,

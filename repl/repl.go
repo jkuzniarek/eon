@@ -6,6 +6,7 @@ import (
 	"io"
 	"eon/lexer"
 	"eon/parser"
+	"eon/eval"
 )
 
 const PROMPT = ">_ "
@@ -61,6 +62,11 @@ func Shell(in io.Reader, out io.Writer) {
 		io.WriteString(out, "\n")
 
 		// eval program
+		evaluated := eval.Eval(program)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
+		}
 	}
 }
 

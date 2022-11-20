@@ -2,6 +2,16 @@ package lexer
 
 import tk "eon/token"
 
+type Lexer struct{
+	input string
+	position int // current position in input (points to current char)
+	readPosition int // current reading position in input (after current char)
+	ch byte // current char under examination
+	row int // current line number (# of \n consumed + 1)
+	col int // current character index in line (# of ch bytes consumed + 1)
+	Depth int
+}
+
 func (l *Lexer) NextToken() tk.Token{
 	var tok tk.Token
 
@@ -86,11 +96,11 @@ func (l *Lexer) NextToken() tk.Token{
 	case ']':
 		tok = newToken(tk.CLOSE_DELIMITER, tk.RSQUAR, l.ch)
 	case '+':
-		if isDigit(l.peekChar()){
+		if isWS(l.peekLChar()) && isDigit(l.peekChar()){
 			tok = l.newSNumber()
 		}
 	case '-':
-		if isDigit(l.peekChar()){
+		if isWS(l.peekLChar()) && isDigit(l.peekChar()){
 			tok = l.newSNumber()
 		}
 	case '$':
@@ -166,16 +176,6 @@ func (l *Lexer) readOperator() string{
 		op = string(l.ch)
 	}
 	return op
-}
-
-type Lexer struct{
-	input string
-	position int // current position in input (points to current char)
-	readPosition int // current reading position in input (after current char)
-	ch byte // current char under examination
-	row int // current line number (# of \n consumed + 1)
-	col int // current character index in line (# of ch bytes consumed + 1)
-	Depth int
 }
 
 func New(input string) *Lexer{

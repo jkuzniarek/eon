@@ -11,6 +11,16 @@ func isQuote(ch byte) bool {
 	return ch == '`' || ch == '"' || ch == '\''
 }
 
+// is whitespace
+func isWS(ch byte) bool {
+	return isRS(ch) || ch == '\n'
+}
+
+// is rowspace
+func isRS(ch byte) bool {
+	return ch == ' ' || ch == '\t' || ch == '\r'
+}
+
 func newToken(cat tk.TokenType, typ tk.TokenType, ch byte) tk.Token{
 	return tk.Token{Cat: cat, Type: typ, Literal: string(ch)}
 }

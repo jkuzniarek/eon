@@ -54,7 +54,7 @@ foobar: 838383
 	}
 }
 
-func testAssignmentExpression(t *testing.T, e ast.Expression, name string) bool{
+func testAssignmentExpression(t *testing.T, e ast.Node, name string) bool{
 	switch e.TokenLiteral() {
 	case ":":
 	case "::":
@@ -93,7 +93,7 @@ func TestIdentifierExpression(t *testing.T) {
 	if len(program.Expressions) != 1 {
 		t.Fatalf("program has not enough Expressions. got=%d", len(program.Expressions))
 	}
-	cmd, ok := program.Expressions[0].(ast.Expression)
+	cmd, ok := program.Expressions[0].(ast.Node)
 	if !ok {
 		t.Fatalf("program.Expressions[0] is not ast.Expression. got=%T", program.Expressions[0])
 	}
@@ -121,9 +121,9 @@ func TestUIntegerLiteralExpression(t *testing.T) {
 	if len(program.Expressions) != 1 {
 		t.Fatalf("program has not enough Expressions. got=%d", len(program.Expressions))
 	}
-	cmd, ok := program.Expressions[0].(ast.Expression)
+	cmd, ok := program.Expressions[0].(ast.Node)
 	if !ok {
-		t.Fatalf("program.Expressions[0] is not ast.Expression. got=%T", program.Expressions[0])
+		t.Fatalf("program.Expressions[0] is not ast.Node. got=%T", program.Expressions[0])
 	}
 
 	literal, ok := cmd.(*ast.UIntegerLiteral)
@@ -149,9 +149,9 @@ func TestSIntegerLiteralExpression(t *testing.T) {
 	if len(program.Expressions) != 1 {
 		t.Fatalf("program has not enough Expressions. got=%d", len(program.Expressions))
 	}
-	cmd, ok := program.Expressions[0].(ast.Expression)
+	cmd, ok := program.Expressions[0].(ast.Node)
 	if !ok {
-		t.Fatalf("program.Expressions[0] is not ast.Expression. got=%T", program.Expressions[0])
+		t.Fatalf("program.Expressions[0] is not ast.Node. got=%T", program.Expressions[0])
 	}
 
 	literal, ok := cmd.(*ast.SIntegerLiteral)
@@ -167,7 +167,7 @@ func TestSIntegerLiteralExpression(t *testing.T) {
 }
 
 
-// func testUIntegerLiteral(t *testing.T, il ast.Expression, value uint) bool {
+// func testUIntegerLiteral(t *testing.T, il ast.Node, value uint) bool {
 // 	integ, ok := il.(*ast.UIntegerLiteral)
 // 	if !ok {
 // 		t.Errorf("il not *ast.UIntegerLiteral. got=%T", il)
