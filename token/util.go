@@ -1,26 +1,42 @@
 package token
 
 
-func LookupName(ident string) TokenType {
-	if tok, ok := keywords[ident]; ok {
-		return tok 
-	}
-	return NAME 
-}
-
-// checks if the input string is an operator
-func LookupOp(op string) TokenType {
-	if tok, ok := operators[op]; ok {
-		return tok 
-	}
-	return ILLEGAL 
-}
-
 func IsKeyword(ident string) bool {
-	if _, ok := keywords[ident]; ok {
+	switch ident {
+	case "fn", "cfn", "pfn", "conc", "void",
+	"esc", "try", "loop", "next", "key",
+	"val", "init", "dest", "in", "out",
+	"type", "src", "has", "os", "vol",
+	"$", "sum", "dif", "mul", "div",
+	"exp", "mod":
 		return true
+	default:
+		return false
 	}
-	return false
+}
+
+func IsOperator(ident string) bool {
+	switch ident {
+	case ".", "/", "#", "*", "@",
+	":", "::", ":&", ":?", ":+", ":-", ":#",
+	"#=", "==", "!=", "<" , ">", "<=", ">=", "|":
+		return true
+	default:
+		return false
+	}
+}
+
+func GetOperatorType(ident string) TokenType {
+	switch ident {
+	case ".", "/", "#", "*", "@":
+		return ACCESS_OPERATOR
+	case ":", "::", ":&", ":?", ":+", ":-", ":#":
+		return ASSIGN_OPERATOR
+	case "#=", "==", "!=", "<" , ">", "<=", ">=", "|":
+		return EVAL_OPERATOR
+	default:
+		return ILLEGAL
+	}
 }
 
 func IsOpenDel(ident string) bool {
@@ -80,8 +96,10 @@ func (t TokenType) ToStr() string {
 		return "BSLASH"
 	
 	// Identifiers & Literals
-	case TYPE:
-		return "TYPE"
+	case KEYWORD:
+		return "KEYWORD"
+	case OPERATOR:
+		return "OPERATOR"
 	case OPEN_DELIMITER:
 		return "OPEN_DELIMITER"
 	case CLOSE_DELIMITER:
@@ -128,16 +146,6 @@ func (t TokenType) ToStr() string {
 		return "LSQUAR"
 	case RSQUAR:
 		return "RSQUAR"
-	}
-	for k, v := range keywords {
-		if t == v {
-			return k
-		}
-	}
-	for k, v := range operators {
-		if t == v {
-			return k
-		}
 	}
 	return "Undefined Token"
 }

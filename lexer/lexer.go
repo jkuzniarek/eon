@@ -16,49 +16,49 @@ func (l *Lexer) NextToken() tk.Token{
 			l.Depth++
 			tok = tk.Token{Cat: tk.COMMENT, Type: tk.COMMENT, Literal: l.readCommentMultiline()}
 		} else {
-			tok = newToken(tk.ACCESS_OPERATOR, tk.SLASH, l.ch)
+			tok = newToken(tk.OPERATOR, tk.ACCESS_OPERATOR, l.ch)
 		}
 	case '\n':
 		tok = newToken(tk.EOL, tk.EOL, l.ch)
 	case ':':
 		if l.peekChar() == ':' {
-			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_CONST, &l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPERATOR, tk.ASSIGN_OPERATOR, &l.input, l.position, l.position+2)
 			l.readChar()
 		} else if l.peekChar() == '?' {
-			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_WEAK, &l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPERATOR, tk.ASSIGN_OPERATOR, &l.input, l.position, l.position+2)
 			l.readChar()
 		} else if l.peekChar() == '&' {
-			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_BIND, &l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPERATOR, tk.ASSIGN_OPERATOR, &l.input, l.position, l.position+2)
 			l.readChar()
 		}  else if l.peekChar() == '+' {
-			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_PLUS, &l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPERATOR, tk.ASSIGN_OPERATOR, &l.input, l.position, l.position+2)
 			l.readChar()
 		}  else if l.peekChar() == '-' {
-			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_MINUS, &l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPERATOR, tk.ASSIGN_OPERATOR, &l.input, l.position, l.position+2)
 			l.readChar()
 		}  else if l.peekChar() == '#' {
-			tok = newTokenFromSrc(tk.ASSIGN_OPERATOR, tk.SET_TYPE, &l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPERATOR, tk.ASSIGN_OPERATOR, &l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
-			tok = newToken(tk.ASSIGN_OPERATOR, tk.SET_VAL, l.ch)
+			tok = newToken(tk.OPERATOR, tk.ASSIGN_OPERATOR, l.ch)
 		}
 	case '.':
-		tok = newToken(tk.ACCESS_OPERATOR, tk.DOT, l.ch)
+		tok = newToken(tk.OPERATOR, tk.ACCESS_OPERATOR, l.ch)
 	case '|':
-		tok = newToken(tk.EVAL_OPERATOR, tk.PIPE, l.ch) 
+		tok = newToken(tk.OPERATOR, tk.EVAL_OPERATOR, l.ch) 
 	case '<':
 		if l.peekChar() == '=' {
-			tok = newTokenFromSrc(tk.EVAL_OPERATOR, tk.LT_EQ, &l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPERATOR, tk.EVAL_OPERATOR, &l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
-			tok = newToken(tk.EVAL_OPERATOR, tk.LT, l.ch)
+			tok = newToken(tk.OPERATOR, tk.EVAL_OPERATOR, l.ch)
 		}
 	case '>':
 		if l.peekChar() == '=' {
-			tok = newTokenFromSrc(tk.EVAL_OPERATOR, tk.GT_EQ, &l.input, l.position, l.position+2)
+			tok = newTokenFromSrc(tk.OPERATOR, tk.EVAL_OPERATOR, &l.input, l.position, l.position+2)
 			l.readChar()
 		} else {
-			tok = newToken(tk.EVAL_OPERATOR, tk.GT, l.ch)
+			tok = newToken(tk.OPERATOR, tk.EVAL_OPERATOR, l.ch)
 		}
 	case '(':
 		if l.peekChar() == ':' {
@@ -94,7 +94,7 @@ func (l *Lexer) NextToken() tk.Token{
 			tok = l.newSNumber()
 		}
 	case '$':
-		tok = newToken(tk.NAME, tk.DOLLAR, l.ch)
+		tok = newToken(tk.NAME, tk.KEYWORD, l.ch)
 	case '\\':
 		if l.peekChar() == 'x' || l.peekChar() == 'd' || l.peekChar() == 'b' {
 			l.Depth++
@@ -108,27 +108,30 @@ func (l *Lexer) NextToken() tk.Token{
 		tok.Cat = tk.EOF
 	default:
 		if isLetter(l.ch){
-			if l.peekLChar() == '<' {
-				tok.Literal = l.readIdentifier()
-				tok.Type = tk.TYPE
-				tok.Cat = tk.TYPE
-			} else {
-				tok.Literal = l.readIdentifier()
-				tok.Type = tk.LookupName(tok.Literal)
-				tok.Cat = tk.NAME
+			tok.Literal = l.readIdentifier()
+			tok.Cat = tk.NAME
+			if tk.IsKeyword(tok.Literal){
+				tok.Type = tk.KEYWORD
+			}else{
+				tok.Type = tk.NAME
 			}
 		} else if isDigit(l.ch){
 			tok = l.newUNumber()
 		} else if isOpChar(l.ch){
 			tok.Literal = l.readOperator()
-			tok.Type = tk.LookupOp(tok.Literal)
-			if tk.IsAccessOp(tok.Literal){
-				tok.Cat = tk.ACCESS_OPERATOR
-			} else if tk.IsAssignOp(tok.Literal){
-				tok.Cat = tk.ASSIGN_OPERATOR
-			} else if tk.IsEvalOp(tok.Literal){
-				tok.Cat = tk.EVAL_OPERATOR
+			if tk.IsOperator(tok.Literal){
+				tok.Cat = tk.OPERATOR
+				if tk.IsAccessOp(tok.Literal){
+					tok.Type = tk.ACCESS_OPERATOR
+				} else if tk.IsAssignOp(tok.Literal){
+					tok.Type = tk.ASSIGN_OPERATOR
+				} else if tk.IsEvalOp(tok.Literal){
+					tok.Type = tk.EVAL_OPERATOR
+				}else{
+					tok.Type = tk.ILLEGAL
+				}
 			}else{
+				tok.Type = tk.ILLEGAL
 				tok.Cat = tk.ILLEGAL
 			}
 		} else if isQuote(l.ch){

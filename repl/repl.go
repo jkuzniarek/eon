@@ -56,8 +56,11 @@ func Shell(in io.Reader, out io.Writer) {
 			stackDepth = 0
 		}
 
+		// print ast for testing
 		io.WriteString(out, program.String())
 		io.WriteString(out, "\n")
+
+		// eval program
 	}
 }
 

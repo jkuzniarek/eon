@@ -45,6 +45,7 @@ type Card struct{
 	Index []Expression // name and infix assign expressions
 	Body Expression // card body expression
 }
+// TODO: change to include body as part of index with key '/'
 
 func (c *Card) expressionNode(){}
 func (c *Card) TokenLiteral() string {
@@ -53,11 +54,12 @@ func (c *Card) TokenLiteral() string {
 func (c *Card) String() string {
 	var out bytes.Buffer
 	iLen := len(c.Index)
-	out.WriteString("<")
 
 	if c.Type != "" {
-		out.WriteString(c.Type)
+		out.WriteString(c.Type + " ")
 	}
+
+	out.WriteString("{")
 
 	if iLen != 0 {
 		if iLen == 1 {
@@ -84,7 +86,7 @@ func (c *Card) String() string {
 		out.WriteString(temp)
 	}
 
-	out.WriteString(">")
+	out.WriteString("}")
 	return out.String()
 }
 
@@ -121,11 +123,11 @@ func (ie *Infix) TokenLiteral() string {
 func (ie *Infix) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("(")
+	// out.WriteString("(")
 	out.WriteString(ie.Left.String())
-	out.WriteString(" " + ie.Operator + " ")
+	out.WriteString(ie.Operator + " ")
 	out.WriteString(ie.Right.String())
-	out.WriteString(")")
+	// out.WriteString(")")
 
 	return out.String()
 }

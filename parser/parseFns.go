@@ -58,16 +58,10 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 				}	
 			}
 			p.Depth--
-		} else {
-			leftExp = p.parseGroup()
-		}
-	case tk.EVAL_OPERATOR:
-		if p.curToken.Type == tk.LT {
+		} else if p.curToken.Type == tk.LCURLY {
 			leftExp = p.parseCard()
-		} else {
-			p.parsingErrAt("parseExpression() 2")
-			p.addTrace("END parse return nil")
-			return nil
+		}else {
+			leftExp = p.parseGroup()
 		}
 	case tk.PRIMITIVE:
 		switch p.curToken.Type {
@@ -99,8 +93,8 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	}
 
 	// infix handling
-	for !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && !(p.inCard && (p.peekTokenIs(tk.GT) || p.peekTokenIs(tk.SLASH))) && precedence < p.peekPrecedence() {
-		if _, ok := precedences[p.peekToken.Type]; !ok {
+	for !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && !(p.inCard && p.peekToken.Literal == "/") && precedence < p.peekPrecedence() {
+		if p.peekToken.Cat != tk.OPERATOR {
 			p.addTrace("END parseExpression()")
 			return leftExp
 		}
@@ -109,7 +103,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		leftExp = p.parseInfix(leftExp)
 	}
 	// input handling
-	if !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && p.peekToken.Cat != tk.CLOSE_DELIMITER && !(p.inCard && (p.peekTokenIs(tk.GT) || p.peekTokenIs(tk.SLASH))) {
+	if !p.peekTokenIs(tk.EOL) && !p.peekTokenIs(tk.EOF) && p.peekToken.Cat != tk.CLOSE_DELIMITER && !(p.inCard && p.peekToken.Literal == "/") {
 		p.nextToken()
 		leftExp = p.parseInput(leftExp)
 	}
@@ -124,28 +118,22 @@ func (p *Parser) parseName() *ast.Name {
 
 
 func (p *Parser) parseCard() *ast.Card {
+	// TODO: change to parse body as part of index with key '/'
 	p.addTrace("START parseCard()")
 	
 	card := &ast.Card{Token: p.curToken}
 
-	if !p.peekTokenIs(tk.GT) {
+	if p.peekTokenIs(tk.RCURLY) {
+		p.nextToken()
+	}else {
 		p.inCard = true
 		p.Depth++
 		card.Index = []ast.Expression{}
 		p.nextToken()
-		// parse type
-		if p.curTokenIs(tk.TYPE){
-			card.Type = p.curToken.Literal
-			p.nextToken()
-			if p.curTokenIs(tk.BSLASH) {
-				p.nextToken()
-				card.Size = p.parseExpression(LOWEST)
-			}
-		}
 
 		var exp ast.Expression
 		// parse index
-		for !p.curTokenIs(tk.GT) && !p.curTokenIs(tk.SLASH) && p.curToken.Cat == tk.NAME {
+		for !p.curTokenIs(tk.RCURLY) && p.curToken.Cat == tk.NAME && p.curToken.Literal != "/" {
 			exp = p.parseExpression(LOWEST)
 			card.Index = append(card.Index, exp)
 			p.addTrace("__index expression last token: "+p.curToken.Literal)
@@ -154,7 +142,7 @@ func (p *Parser) parseCard() *ast.Card {
 		}
 
 		// parse body
-		if p.curTokenIs(tk.SLASH) {
+		if p.curToken.Literal == "/" {
 			p.nextToken()
 			card.Body = p.parseExpression(LOWEST)
 			p.nextToken()
@@ -164,15 +152,13 @@ func (p *Parser) parseCard() *ast.Card {
 		for p.curTokenIs(tk.EOL){
 			p.nextToken()
 		}
-		if !p.curTokenIs(tk.GT) {
+		if !p.curTokenIs(tk.RCURLY) {
 			p.parsingErrAt("parseCard()")
 			p.addTrace("END parse return nil")
 			return nil
 		}	
 		p.Depth--
 		p.inCard = false
-	}else{
-		p.nextToken()
 	}
 	
 	p.addTrace("END parseCard()")
@@ -215,7 +201,7 @@ func (p *Parser) parseGroup() *ast.Group {
 		switch gType {
 		case tk.LSQUAR:
 			endTok = tk.RSQUAR
-		case tk.LCURLY, tk.SCURLY:
+		case tk.SCURLY:
 			endTok = tk.RCURLY
 		default:
 			p.parsingErrAt("parseGroup()")
@@ -266,7 +252,7 @@ func (p *Parser) parseInput(left ast.Expression) ast.Expression {
 	expression := &ast.Input{
 		Left: left,
 	}
-	p.nextToken()
+	// p.nextToken()
 	expression.Input = p.parseExpression(LOWEST)
 	p.addTrace("END parseInput()")
 	return expression

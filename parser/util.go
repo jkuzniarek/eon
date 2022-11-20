@@ -46,18 +46,24 @@ func (p *Parser) parsingErrAt(location string) {
 	p.errors = append(p.errors, msg)
 }
 
-func (p *Parser) peekPrecedence() int {
-	if p, ok := precedences[p.peekToken.Type]; ok {
-		return p 
+func getPrecedence(token tk.TokenType) int {
+	switch token {
+	case tk.EVAL_OPERATOR:
+		return EQUALS
+	case tk.ASSIGN_OPERATOR:
+		return ASSIGN
+	case tk.ACCESS_OPERATOR:
+		return CALL
+	default:
+		return LOWEST
 	}
-	return LOWEST
+}
+func (p *Parser) peekPrecedence() int {
+	return getPrecedence(p.peekToken.Type)
 }
 
 func (p *Parser) curPrecedence() int {
-	if p, ok := precedences[p.curToken.Type]; ok {
-		return p 
-	}
-	return LOWEST
+	return getPrecedence(p.curToken.Type)
 }
 
 func isHexChar(ch byte) bool{
