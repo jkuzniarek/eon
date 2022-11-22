@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	tk "eon/token"
 )
 
 type Card struct{

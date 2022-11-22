@@ -2,7 +2,6 @@ package ast
 
 import (
 	tk "eon/token"
-	"bytes"
 	ssDec "github.com/shopspring/decimal"
 )
 

@@ -1,10 +1,5 @@
 package card
 
-// import (
-// 	"fmt"
-// 	"strings"
-// )
-
 type CardType int
 
 const (
@@ -13,6 +8,7 @@ const (
 	UINT
 	INDEX
 	ERROR
+	FUNCTION
 )
 
 type Card interface{

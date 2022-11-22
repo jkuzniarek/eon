@@ -45,7 +45,13 @@ func Eval(node ast.Node, env *card.Env) card.Card {
 		// case tk.ACCESS_OPERATOR: // TODO
 
 		}
-		
+	case *ast.Group:
+		switch node.Token.Type {
+		// case tk.CPAREN:
+			
+		case tk.HPAREN:
+			return &card.Function{Body: node, Env: env}
+		}
 
 	}
 
