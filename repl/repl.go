@@ -7,12 +7,14 @@ import (
 	"eon/lexer"
 	"eon/parser"
 	"eon/eval"
+	"eon/card"
 )
 
 const PROMPT = ">_ "
 
 func Shell(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := card.NewEnv()
 	inputStack := "" 
 	stackDepth := 0
 	var inputLog []string
@@ -57,12 +59,12 @@ func Shell(in io.Reader, out io.Writer) {
 			stackDepth = 0
 		}
 
-		// print ast for testing
-		io.WriteString(out, program.String())
-		io.WriteString(out, "\n")
+		// print ast for debugging
+		// io.WriteString(out, program.String())
+		// io.WriteString(out, "\n")
 
 		// eval program
-		evaluated := eval.Eval(program)
+		evaluated := eval.Eval(program, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")
