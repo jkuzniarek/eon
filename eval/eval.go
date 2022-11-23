@@ -14,7 +14,7 @@ var (
 func Eval(node ast.Node, env *card.Env) card.Card {
 	switch node := node.(type) {
 
-	// eval entry point
+	// usual entry point
 	case *ast.Program:
 		return evalExpressions(node.Expressions, env)
 
@@ -22,7 +22,7 @@ func Eval(node ast.Node, env *card.Env) card.Card {
 	case *ast.UInt:
 		return &card.UInt{ Value: node.Value}
 	case *ast.Name:
-		return evalName(node, env)
+		return evalName(node, env, nil)
 	case *ast.Infix:
 		switch tk.GetOperatorType(node.Operator) {
 		case tk.EVAL_OPERATOR:
@@ -52,7 +52,22 @@ func Eval(node ast.Node, env *card.Env) card.Card {
 		case tk.HPAREN:
 			return &card.Function{Body: node, Env: env}
 		}
+	case *ast.Input:
+		val := Eval(node.Input, env)
+		if isError(val) {
+			return val
+		}
 
+		// left is name/infix, right is expression
+		switch node.Left.(type) {
+		case *ast.Name:
+			return evalName(node.Left.(*ast.Name), env, val)
+			// TODO: build evalInfixAccess
+		// case *ast.Infix:
+		// 	return evalInfixAccess(node.Left.(*ast.Infix), env, val)
+		default:
+			return newError("unhandled input node: %s %s", node.String(), val.IRType().String())
+		}
 	}
 
 	return nil
@@ -65,14 +80,13 @@ func evalExpressions(exprs []ast.Node, env *card.Env) card.Card {
 		result = Eval(expression, env)
 
 		switch result := result.(type) {
-		// classical return statement which includes stopping execution
-		// case *card.ReturnValue:
-		// 	return result.Value
+		case *card.OutVal:
+			return result.Value
 		case *card.Error:
 			return result
 		}
 	}
-	return result
+	return result // this line should only apply when run in the shell
 }
 
 func evalInfixEval(operator string, left card.Card, right card.Card) card.Card {
@@ -93,19 +107,22 @@ func evalInfixEval(operator string, left card.Card, right card.Card) card.Card {
 }
 
 func evalInfixAssign(left ast.Node, operator string, val card.Card, env *card.Env) card.Card {
-	switch operator {
-	case ":":
-		switch left.(type) { // TODO: add ifelse for nested data structures and accessors
-		case *ast.Name:
-			return env.Set(left.(*ast.Name).Value, val) 
-		default:
-			return newError("unhandled name node: %s %s %s", left.String(), operator, val.IRType().String())
+	switch left.(type) { // TODO: add ifelse for nested data structures and accessors
+	case *ast.Name:
+		if left.(*ast.Name).Token.Type == tk.KEYWORD {
+			return VOID;
 		}
-		
-		return ANTIVOID
+		switch operator {
+		case ":":
+			return env.Set(left.(*ast.Name).Value, val)
+		default:
+			return newError("unknown operator: %s %s %s", left.String(), operator, val.IRType().String())
+		}
 	default:
-		return newError("unknown operator: %s %s %s", left.String(), operator, val.IRType().String())
+		return newError("unhandled name node: %s %s %s", left.String(), operator, val.IRType().String())
 	}
+
+	return ANTIVOID
 }
 
 func evalInfixUInt(operator string, left card.Card, right card.Card) card.Card {
@@ -139,11 +156,70 @@ func evalInfixUInt(operator string, left card.Card, right card.Card) card.Card {
 	}
 }
 
-func evalName(node *ast.Name, env *card.Env) card.Card {
+func evalName(node *ast.Name, env *card.Env, input card.Card) card.Card {
+	// check if name is keyword
+	if input == nil && node.Token.Type == tk.KEYWORD {
+		switch node.Value {
+		case "void":
+			out, ok := env.Get("out")
+			if !ok { // TODO: convert this to return a VOID
+				out = nil
+			}
+			return &card.OutVal{Value: out}
+		// case "esc":
+		// 	return &card.Esc
+		default:
+			return newError("unhandled keyword node: %s", node.String())
+		}
+	}
+	//
 	val, ok := env.Get(node.Value)
-	if !ok {
-		return newError("name not found: " + node.Value)
+	if !ok { 
+		val = VOID
+	}
+
+	if val.IRType() == card.FUNCTION {
+		return applyFunction(val, nil, input)
 	}
 	// TODO: use code to adapt evalInfixAccess to nested data structures
 	return val
+}
+
+func applyFunction(fn card.Card, l_arg card.Card, r_arg card.Card) card.Card {
+	function, ok := fn.(*card.Function)
+	if !ok {
+		// ?TODO: convert to return a VOID
+		return newError("not a function: %s", fn.IRType().String())
+	}
+
+	extendedEnv := extendFunctionEnv(function, nil, r_arg)
+	evaluated := Eval(function.Body, extendedEnv)
+	return unwrapOutVal(evaluated)
+}
+
+// TODO: add l_arg param, consider changing name from src -> argl
+func extendFunctionEnv(fn *card.Function, l_arg card.Card, r_arg card.Card) *card.Env {
+	env := card.NewChildEnv(fn.Env)
+
+	if l_arg == nil {
+		env.Set("argl", VOID)
+	}else{
+		env.Set("argl", l_arg)
+	}
+	if r_arg == nil {
+		env.Set("argr", VOID)
+	}else{
+		env.Set("argr", r_arg)
+	}
+	env.Set("out", ANTIVOID)
+
+	return env
+}
+
+func unwrapOutVal(obj card.Card) card.Card {
+	if outVal, ok := obj.(*card.OutVal); ok {
+		return outVal.Value
+	}
+
+	return obj
 }

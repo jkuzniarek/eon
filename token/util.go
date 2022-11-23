@@ -5,10 +5,9 @@ func IsKeyword(ident string) bool {
 	switch ident {
 	case "fn", "cfn", "pfn", "conc", "void",
 	"esc", "try", "loop", "next", "key",
-	"val", "init", "dest", "in", "out",
-	"type", "src", "has", "os", "vol",
-	"$", "sum", "dif", "mul", "div",
-	"exp", "mod":
+	"val", "in", "type", "has", "os", 
+	"vol", "$", "sum", "dif", "mul", 
+	"div", "exp", "mod":
 		return true
 	default:
 		return false

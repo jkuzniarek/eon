@@ -3,12 +3,21 @@ package card
 type CardType int
 
 const (
+	// special
 	VOID CardType = iota
 	ANTIVOID
-	UINT
-	INDEX
 	ERROR
 	FUNCTION
+	OUT_VAL
+
+	// primitives
+	UINT
+	SINT
+	DEC
+	STR
+
+	// composites
+	INDEX
 )
 
 type Card interface{
@@ -30,6 +39,10 @@ func (o CardType) String() string {
 		return "INDEX"
 	case ERROR:
 		return "ERROR"
+	case FUNCTION:
+		return "FUNCTION"
+	case OUT_VAL:
+		return "OUT_VAL"
 	default:
 		return "UNDEFINED_CARD_TYPE"
 	}
