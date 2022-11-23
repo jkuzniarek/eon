@@ -66,7 +66,7 @@ func Shell(in io.Reader, out io.Writer) {
 		// eval program
 		evaluated := eval.Eval(program, env)
 		if evaluated != nil {
-			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, evaluated.String())
 			io.WriteString(out, "\n")
 		}
 	}

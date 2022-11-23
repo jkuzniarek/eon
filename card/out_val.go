@@ -6,4 +6,4 @@ type OutVal struct {
 }
 
 func (o *OutVal) IRType() CardType { return OUT_VAL }
-func (o *OutVal) Inspect() string { return o.Value.Inspect() }
+func (o *OutVal) String() string { return o.Value.String() }

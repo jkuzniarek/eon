@@ -6,4 +6,4 @@ type Error struct {
 }
 
 func (o *Error) IRType() CardType { return ERROR }
-func (o *Error) Inspect() string { return "!Error: "+ o.Message}
+func (o *Error) String() string { return "!Error: "+ o.Message}

@@ -7,7 +7,7 @@ import (
 type Dec struct {
 	Value ssDec.Decimal
 }
-func (o *Dec) Inspect() string { 
+func (o *Dec) String() string { 
 	return o.Value.String()
 }
 func (o *Dec) IRType() CardType { return DEC }

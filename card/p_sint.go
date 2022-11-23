@@ -7,7 +7,7 @@ import(
 type SInt struct {
 	Value int
 }
-func (o *SInt) Inspect() string { 
+func (o *SInt) String() string { 
 	if o.Value >= 0 {
 		return fmt.Sprintf("+%d", o.Value)
 	}else{

@@ -5,7 +5,7 @@ type IndexCard struct {
 	TypeConstant int 
 	Index map[string]*Card
 }
-func (o *Index) Inspect() string { 
+func (o *Index) String() string { 
 	out := "{"
 	hasType := false
 	hasBody := false
@@ -21,7 +21,7 @@ func (o *Index) Inspect() string {
 	if (len(o.Index)){
 		hasIndex = true
 	}
-	bType := o.Body.VMType() 
+	bType := o.Body.IRType() 
 
 	if (hasType && hasBody && !hasIndex && bType == BYT && o.TypeValue == "str"){
 		out = fmt.Sprintf("\"%s\"", strings.Replace(o.Value, "'", "''", -1))
@@ -58,11 +58,11 @@ func (o *Index) Inspect() string {
 		if hasIndex {
 			t := VOID
 			for k, v := range o.Index {
-				t = v.VMType()
+				t = v.IRType()
 				if(t == EMPTY){
 					out = out + fmt.Sprintf("\n %s ", k)
 				}else{
-					out = fmt.Sprintf("\n %s: %s ", k, v.Inspect())
+					out = fmt.Sprintf("\n %s: %s ", k, v.String())
 				}
 			}
 			if hasBody {
@@ -73,7 +73,7 @@ func (o *Index) Inspect() string {
 			if bType == LLNODE {
 				out += o.Body.InspectList()
 			}else{
-				out += o.Body.Inspect()
+				out += o.Body.String()
 			}
 		}
 	}

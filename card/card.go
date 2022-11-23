@@ -22,7 +22,7 @@ const (
 
 type Card interface{
 	IRType() CardType
-	Inspect() string
+	String() string
 	// ByteArray() []byte // everything should be convertible into a byte array
 }
 

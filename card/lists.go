@@ -5,7 +5,7 @@ package card
 
 func (o *Card) InspectList() string{
 	out := ""
-	switch o.Body.VMType(){
+	switch o.Body.IRType(){
 	case LLNODE:
 		//
 	}
@@ -17,8 +17,8 @@ type LLNode struct {
 	NextSibling *LLNode
 	Node Card
 }
-func (o *NoBody) Inspect() string { return o.InspectList()}
-func (o *NoBody) VMType() CardType { return LLNODE}
+func (o *NoBody) String() string { return o.InspectList()}
+func (o *NoBody) IRType() CardType { return LLNODE}
 func (o *NoBody) UserType() string { return o.TypeValue}
 
 // expression list

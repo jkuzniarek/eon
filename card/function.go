@@ -10,4 +10,4 @@ type Function struct {
 }
 
 func (o *Function) IRType() CardType { return FUNCTION }
-func (o *Function) Inspect() string { return o.Body.String() }
+func (o *Function) String() string { return o.Body.String() }

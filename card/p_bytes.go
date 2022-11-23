@@ -4,7 +4,7 @@ package card
 // type Bytes struct {
 // 	Value []byte
 // }
-// func (o *Bytes) Inspect() string { 
+// func (o *Bytes) String() string { 
 // 	out := "<byte [ "
 // 	for _, v := range o.Value {
 // 		out += fmt.Sprintf("%d ", v)
